@@ -8,5 +8,6 @@ golang {
 
 dependencies {
     golang {
+        build name: 'github.com/skip2/go-qrcode'
     }
 }

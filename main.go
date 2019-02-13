@@ -1,17 +1,17 @@
 package main
 
 import (
+	"./bilibili"
 	"fmt"
-	"net/http"
+	"log"
 )
 
 func main() {
-	resp, err := http.Get("http://www.baidu.com/")
+	cookies, timeout := bilibili.GetLoginQRCode().WaitForLogin()
 
-	print(err)
-	if err != nil {
-		fmt.Println("err")
+	if timeout {
+		log.Fatal("Timeout!")
+	} else {
+		fmt.Println(cookies)
 	}
-
-	fmt.Println(resp)
 }
