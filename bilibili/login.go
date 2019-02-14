@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"sort"
 	"strings"
 	"time"
 )
@@ -27,9 +28,7 @@ type qrLogin struct {
 // heartbeat, should be called per 3 seconds
 func (this qrLogin) heartbeat() (bool, string) {
 	body := map[string]interface{}{}
-	client := &http.Client{
-		Timeout: 5 * time.Second,
-	}
+	client := &http.Client{}
 	cookies := ""
 
 	params := url.Values{}
@@ -40,6 +39,7 @@ func (this qrLogin) heartbeat() (bool, string) {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	defer res.Body.Close()
 
 	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
 		log.Fatal(err.Error())
@@ -93,6 +93,7 @@ func getLoginAddr() qrLogin {
 	if err != nil || res.Body == nil {
 		log.Fatal(err.Error())
 	}
+	defer res.Body.Close()
 
 	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
 		log.Fatal(err.Error())
@@ -117,4 +118,29 @@ func GetLoginQRCode() QRCode {
 		image:   image,
 		png:     png,
 	}
+}
+
+func Cookies(v url.Values) string {
+	if v == nil {
+		return ""
+	}
+	var buf strings.Builder
+	keys := make([]string, 0, len(v))
+	for k := range v {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		vs := v[k]
+		keyEscaped := url.QueryEscape(k)
+		for _, v := range vs {
+			if buf.Len() > 0 {
+				buf.WriteByte(';')
+			}
+			buf.WriteString(keyEscaped)
+			buf.WriteByte('=')
+			buf.WriteString(url.QueryEscape(v))
+		}
+	}
+	return buf.String()
 }

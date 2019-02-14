@@ -12,6 +12,6 @@ func main() {
 	if timeout {
 		log.Fatal("Timeout!")
 	} else {
-		fmt.Println(cookies)
+		fmt.Println(bilibili.GetUserMID(bilibili.Cookies(cookies)))
 	}
 }
