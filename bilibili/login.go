@@ -63,9 +63,9 @@ func (this QRCode) Check() (bool, string) {
 	return this.qrlogin.heartbeat()
 }
 
-func (this QRCode) WaitForLogin() (map[string]string, bool) {
+func (this QRCode) WaitForLogin() (url.Values, bool) {
 	response := ""
-	cookies := map[string]string{}
+	cookies := url.Values{}
 	for times := 0; times < 60; times++ {
 		ok, ret := this.Check()
 		response = ret
@@ -74,7 +74,7 @@ func (this QRCode) WaitForLogin() (map[string]string, bool) {
 			response = response[42 : len(response)-72]
 			for _, value := range strings.Split(response, "&") {
 				ans := strings.Split(value, "=")
-				cookies[ans[0]] = ans[1]
+				cookies.Set(ans[0], ans[1])
 			}
 			break
 		} else {
