@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type MySpaceResponse struct {
@@ -62,7 +63,7 @@ type mySpaceWallet struct {
 	CouponDueTime int `json:"coupon_due_time"`
 }
 
-func GetUserMID(cookies string) int {
+func GetUserMID(cookies string) string {
 	client := http.Client{}
 	body := MySpaceResponse{}
 
@@ -74,7 +75,9 @@ func GetUserMID(cookies string) int {
 	req.Header.Add("Cookie", cookies)
 
 	res, err := client.Do(req)
-	defer res.Body.Close()
+	if res.Body != nil {
+		defer res.Body.Close()
+	}
 
 	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
 		log.Fatal(err.Error())
@@ -84,5 +87,5 @@ func GetUserMID(cookies string) int {
 		log.Fatal(body.Message)
 	}
 
-	return body.Data.Mid
+	return strconv.Itoa(body.Data.Mid)
 }

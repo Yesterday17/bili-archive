@@ -39,7 +39,10 @@ func (this qrLogin) heartbeat() (bool, string) {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	defer res.Body.Close()
+
+	if res.Body != nil {
+		defer res.Body.Close()
+	}
 
 	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
 		log.Fatal(err.Error())
@@ -93,7 +96,10 @@ func getLoginAddr() qrLogin {
 	if err != nil || res.Body == nil {
 		log.Fatal(err.Error())
 	}
-	defer res.Body.Close()
+
+	if res.Body != nil {
+		defer res.Body.Close()
+	}
 
 	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
 		log.Fatal(err.Error())

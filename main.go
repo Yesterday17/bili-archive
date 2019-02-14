@@ -7,11 +7,16 @@ import (
 )
 
 func main() {
-	cookies, timeout := bilibili.GetLoginQRCode().WaitForLogin()
+	cookiesList, timeout := bilibili.GetLoginQRCode().WaitForLogin()
 
 	if timeout {
 		log.Fatal("Timeout!")
 	} else {
-		fmt.Println(bilibili.GetUserMID(bilibili.Cookies(cookies)))
+		cookies := bilibili.Cookies(cookiesList)
+
+		mid := bilibili.GetUserMID(cookies)
+		fmt.Println("MID: " + mid)
+
+		bilibili.GetFavoriteList(mid, cookies)
 	}
 }
