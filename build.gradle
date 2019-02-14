@@ -11,3 +11,8 @@ dependencies {
         build name: 'github.com/skip2/go-qrcode'
     }
 }
+
+goBuild {
+    targetPlatform = ['windows-amd64', 'linux-amd64', 'darwin-amd64']
+    outputLocation = './.gogradle/build/${PROJECT_NAME}_${GOOS}_${GOARCH}${GOEXE}'
+}
