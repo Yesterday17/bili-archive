@@ -2,7 +2,6 @@ package bilibili
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 )
 
@@ -14,13 +13,14 @@ type VideoPage struct {
 
 type VideoPages []VideoPage
 
-func GetVideoPages(aid string) VideoPages {
+func GetVideoPages(aid string) (VideoPages, error) {
 	client := http.Client{}
 	body := VideoPages{}
+	var error error
 
 	res, err := client.Get("https://www.bilibili.com/widget/getPageList?aid=" + aid)
 	if err != nil {
-		log.Fatal(err.Error())
+		error = err
 	}
 
 	if res.Body != nil {
@@ -28,7 +28,7 @@ func GetVideoPages(aid string) VideoPages {
 	}
 
 	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
-		log.Fatal(err.Error())
+		error = err
 	}
-	return body
+	return body, error
 }
