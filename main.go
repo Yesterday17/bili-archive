@@ -20,7 +20,8 @@ func main() {
 
 		for _, value := range bilibili.GetFavoriteList(mid, cookies) {
 			// https://api.bilibili.com/x/space/fav/arc?vmid=5756570&fid=1683980&pn=1
-			strconv.Itoa(value.MID)
+			fid := strconv.Itoa(value.FID)
+			fmt.Println(fid)
 		}
 	}
 }

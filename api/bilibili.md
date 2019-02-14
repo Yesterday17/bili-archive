@@ -1,33 +1,39 @@
 ## Login
+
 1. Get login QR Code  
-URL: https://passport.bilibili.com/qrcode/getLoginUrl
-Interface:
+   URL: https://passport.bilibili.com/qrcode/getLoginUrl
+   Interface:
+
 ```javascript
 {
-    code: number;
-    status: boolean;
-    ts: number; // Timestamp
-    data: {
-        url: string; // The content of QR Code
-        oauthKey: string; // used in further post
-    }
+  code: number;
+  status: boolean;
+  ts: number; // Timestamp
+  data: {
+    url: string; // The content of QR Code
+    oauthKey: string; // used in further post
+  }
 }
 ```
 
 2. Get login status after getting QR Code  
-URL: https://passport.bilibili.com/qrcode/getLoginInfo  
-Method: POST  
-Body: 
+   URL: https://passport.bilibili.com/qrcode/getLoginInfo  
+   Method: POST  
+   Body:
+
 ```json
 {
-    "oauthKey": "#oauthkey#",
-    "gourl": "https://passport.bilibili.com/ajax/miniLogin/redirect"
+  "oauthKey": "#oauthkey#",
+  "gourl": "https://passport.bilibili.com/ajax/miniLogin/redirect"
 }
 ```
+
 Response:
+
 ```json
-{"status":false,"data":-4,"message":"Can't scan~"}
+{ "status": false, "data": -4, "message": "Can't scan~" }
 ```
+
 ```javascript
 {
     "code":0,
@@ -45,10 +51,12 @@ Response:
 ```
 
 ## User Status
+
 URL: https://api.bilibili.com/x/web-interface/nav  
 Method: GET  
 Header: Cookies  
 Response:
+
 ```json
 {
   "code": -101,
@@ -59,6 +67,7 @@ Response:
   }
 }
 ```
+
 ```json
 {
   "code": 0,
@@ -108,9 +117,11 @@ Response:
 ```
 
 ## Favorite
+
 URL: http://api.bilibili.com/x/space/fav/nav?mid=123817257  
 Method: GET
-Response: 
+Response:
+
 ```json
 {
   "code": 0,
@@ -1085,8 +1096,10 @@ Response:
 ```
 
 ## Detailed Favorite
-URL: https://api.bilibili.com/x/space/fav/arc?vmid=5756570&ps=30&fid=1683980&pn=1  
-Response: 
+
+URL: https://api.bilibili.com/x/space/fav/arc?vmid=5756570&fid=1683980&pn=1  
+Response:
+
 ```json
 {
   "code": 0,
