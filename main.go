@@ -1,8 +1,8 @@
 package main
 
 import (
-	"./bilibili"
 	"fmt"
+	"github.com/Yesterday17/bili-archive/bilibili"
 )
 
 func main() {

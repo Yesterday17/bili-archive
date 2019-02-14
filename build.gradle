@@ -3,7 +3,7 @@ plugins {
 }
 
 golang {
-    packagePath = 'github.com/Yesterday17/bili-archive' // 欲构建项目的go import path，注意不是本地目录的路径！
+    packagePath = 'github.com/Yesterday17/bili-archive'
 }
 
 dependencies {
