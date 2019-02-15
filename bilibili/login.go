@@ -81,7 +81,7 @@ func (this QRCode) WaitForLogin() (url.Values, bool) {
 			}
 			break
 		} else {
-			time.NewTicker(3 * time.Second)
+			time.Sleep(3 * time.Second)
 		}
 	}
 
