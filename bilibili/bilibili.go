@@ -1,6 +1,7 @@
 package bilibili
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 )
@@ -9,8 +10,36 @@ func addLine(original *string, line string) {
 	*original += line + "\n"
 }
 
+func IterateFavoriteList(mid string, cookies string, callback func(key, value string)) {
+	for _, value := range GetFavoriteList(mid, cookies) {
+		fid := strconv.Itoa(value.FID)
+		callback("Favorite", value.Name)
+		callback("FID", fid)
+
+		for i := 0; i < int(math.Ceil(float64(value.CurrentCount)/30.0)); i++ {
+			for index, data := range GetFavoriteListItems(mid, fid, strconv.Itoa(i+1)) {
+				aid := strconv.Itoa(data.AID)
+				callback(strconv.Itoa(index+1), data.Title)
+				callback("AID", aid)
+
+				pages, err := GetVideoPages(aid)
+				if err != nil {
+					callback("Message", "Video unavailable.")
+				} else {
+					for index, page := range pages {
+						callback(strconv.Itoa(index+1), page.PageName)
+					}
+				}
+			}
+		}
+	}
+}
+
 func GetUserFavoriteListReport(mid string, currentUser bool) string {
-	cookiesList, timeout := GetLoginQRCode().WaitForLogin()
+	qrCode := GetLoginQRCode()
+	fmt.Println(qrCode.Image)
+
+	cookiesList, timeout := qrCode.WaitForLogin()
 	report := ""
 
 	if timeout {
@@ -22,31 +51,9 @@ func GetUserFavoriteListReport(mid string, currentUser bool) string {
 		}
 		addLine(&report, "MID: "+mid)
 
-		for _, value := range GetFavoriteList(mid, cookies) {
-			fid := strconv.Itoa(value.FID)
-			addLine(&report, "Favorite: "+value.Name)
-			addLine(&report, "FID: "+fid)
-
-			for i := 0; i < int(math.Ceil(float64(value.CurrentCount)/30.0)); i++ {
-				for index, data := range GetFavoriteListItems(mid, fid, strconv.Itoa(i+1)) {
-					aid := strconv.Itoa(data.AID)
-					addLine(&report, strconv.Itoa(index+1)+". "+data.Title)
-					addLine(&report, "AID: "+aid)
-					addLine(&report, "Pages:")
-
-					pages, err := GetVideoPages(aid)
-					if err != nil {
-						addLine(&report, "Video unavailable.")
-					} else {
-						for index, page := range pages {
-							addLine(&report, "  ("+strconv.Itoa(index+1)+"). "+page.PageName)
-						}
-					}
-
-					addLine(&report, "")
-				}
-			}
-		}
+		IterateFavoriteList(mid, cookies, func(key, value string) {
+			addLine(&report, key+": "+value)
+		})
 	}
 	return report
 }

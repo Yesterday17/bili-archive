@@ -3,7 +3,6 @@ package bilibili
 import (
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"github.com/skip2/go-qrcode"
 	"log"
 	"net/http"
@@ -116,8 +115,6 @@ func GetLoginQRCode() QRCode {
 	}
 
 	image := "data:image/png;base64," + base64.StdEncoding.EncodeToString(png)
-
-	fmt.Println(image)
 
 	return QRCode{
 		QRLogin: login,
