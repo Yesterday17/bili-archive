@@ -10,24 +10,22 @@ func addLine(original *string, line string) {
 	*original += line + "\n"
 }
 
-func IterateFavoriteList(mid string, cookies string, callback func(key, value string)) {
+func IterateFavoriteList(mid string, cookies string, callback func(key, value string, data interface{})) {
 	for _, value := range GetFavoriteList(mid, cookies) {
 		fid := strconv.Itoa(value.FID)
-		callback("Favorite", value.Name)
-		callback("FID", fid)
+		callback("Favorite", value.Name, value)
 
 		for i := 0; i < int(math.Ceil(float64(value.CurrentCount)/30.0)); i++ {
 			for index, data := range GetFavoriteListItems(mid, fid, strconv.Itoa(i+1)) {
 				aid := strconv.Itoa(data.AID)
-				callback(strconv.Itoa(index+1), data.Title)
-				callback("AID", aid)
+				callback("Video "+strconv.Itoa(index+1), data.Title, data)
 
 				pages, err := GetVideoPages(aid)
 				if err != nil {
-					callback("Message", "Video unavailable.")
+					callback("Message", "Video unavailable.", "")
 				} else {
 					for index, page := range pages {
-						callback(strconv.Itoa(index+1), page.PageName)
+						callback("Page "+strconv.Itoa(index+1), page.PageName, page)
 					}
 				}
 			}
@@ -51,7 +49,7 @@ func GetUserFavoriteListReport(mid string, currentUser bool) string {
 		}
 		addLine(&report, "MID: "+mid)
 
-		IterateFavoriteList(mid, cookies, func(key, value string) {
+		IterateFavoriteList(mid, cookies, func(key, value string, data interface{}) {
 			addLine(&report, key+": "+value)
 		})
 	}
