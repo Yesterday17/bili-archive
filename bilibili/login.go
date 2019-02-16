@@ -57,13 +57,13 @@ func (this qrLogin) heartbeat() (bool, string) {
 }
 
 type QRCode struct {
-	qrlogin qrLogin
-	png     []byte
-	image   string
+	QRLogin qrLogin
+	Png     []byte
+	Image   string
 }
 
 func (this QRCode) Check() (bool, string) {
-	return this.qrlogin.heartbeat()
+	return this.QRLogin.heartbeat()
 }
 
 func (this QRCode) WaitForLogin() (url.Values, bool) {
@@ -120,9 +120,9 @@ func GetLoginQRCode() QRCode {
 	fmt.Println(image)
 
 	return QRCode{
-		qrlogin: login,
-		image:   image,
-		png:     png,
+		QRLogin: login,
+		Image:   image,
+		Png:     png,
 	}
 }
 
