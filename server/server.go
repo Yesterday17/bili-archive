@@ -2,10 +2,15 @@ package server
 
 import (
 	"encoding/json"
+	"flag"
 	"github.com/Yesterday17/bili-archive/bilibili"
 	"github.com/gorilla/websocket"
+	"github.com/iawia002/annie/config"
+	"github.com/iawia002/annie/downloader"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -38,6 +43,17 @@ func CreateBiliArchiveServer() {
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		if ok {
+			cookies = bilibili.GetCookiesString(cookies)
+
+			flag.BoolVar(&config.InfoOnly, "i", false, "Information only")
+			flag.StringVar(&config.Cookie, "c", cookies, "Cookie")
+			flag.IntVar(
+				&config.RetryTimes, "retry", 10, "How many times to retry when the download failed",
+			)
+		}
+
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(output)
 	}
@@ -60,10 +76,52 @@ func CreateBiliArchiveServer() {
 			log.Fatal(err)
 		}
 
+		fav, av, page := "", "", ""
+		videoItem, videoPage := bilibili.FavoriteListItemVideo{}, bilibili.VideoPage{}
 		bilibili.IterateFavoriteList(string(mid), cookies, func(key, value string, data interface{}) {
+			switch key {
+			case "Favorite":
+				fav = value
+			case "Video":
+				videoItem = data.(bilibili.FavoriteListItemVideo)
+				av = strconv.Itoa(videoItem.AID)
+			case "Page":
+				videoPage = data.(bilibili.VideoPage)
+				page = strconv.Itoa(videoPage.Page)
+			case "Message":
+				page = ""
+			}
+
 			err := ws.WriteMessage(messageType, []byte(key+": "+value))
 			if err != nil {
 				log.Println(err)
+			}
+
+			if av != "" && page != "" {
+				os.MkdirAll("./video/"+fav, os.ModePerm)
+				config.OutputPath = "./video/" + fav
+				config.OutputName = videoItem.Title + " - " + videoPage.PageName
+
+				if _, err := os.Stat(config.OutputPath + "/" + config.OutputName + ".flv"); os.IsNotExist(err) {
+					url := "https://www.bilibili.com/video/av" + av + "/?p=" + page
+
+					v, err := bilibili.Extract(url)
+					if err != nil {
+						log.Println(err)
+					}
+
+					for _, item := range v {
+						if item.Err != nil {
+							log.Println(err)
+							continue
+						}
+						err = downloader.Download(item, url)
+						if err != nil {
+							log.Println(err)
+						}
+					}
+				}
+				page = ""
 			}
 		})
 

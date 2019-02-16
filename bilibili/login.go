@@ -88,6 +88,16 @@ func (this QRCode) WaitForLogin() (url.Values, bool) {
 	return cookies, strings.EqualFold(response, "")
 }
 
+func GetCookiesString(link string) string {
+	cookies := url.Values{}
+	link = link[42 : len(link)-72]
+	for _, value := range strings.Split(link, "&") {
+		ans := strings.Split(value, "=")
+		cookies.Set(ans[0], ans[1])
+	}
+	return Cookies(cookies)
+}
+
 func getLoginAddr() qrLogin {
 	var body loginResponse
 	res, err := http.Get("https://passport.bilibili.com/qrcode/getLoginUrl")

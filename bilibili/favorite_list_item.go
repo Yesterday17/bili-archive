@@ -25,10 +25,10 @@ type favoriteListItemData struct {
 	TID            int                     `json:"tid"`
 	Order          string                  `json:"order"`
 	Keyword        string                  `json:"keyword"`
-	Archives       []favoriteListItemVideo `json:"archives"`
+	Archives       []FavoriteListItemVideo `json:"archives"`
 }
 
-type favoriteListItemVideo struct {
+type FavoriteListItemVideo struct {
 	AID            int                            `json:"aid"`
 	Videos         int                            `json:"videos"`
 	TID            int                            `json:"tid"`
@@ -78,7 +78,7 @@ type favoriteListItemVideoDimension struct {
 	Rotate int `json:"rotate"`
 }
 
-func GetFavoriteListItems(mid, fid, pn string) []favoriteListItemVideo {
+func GetFavoriteListItems(mid, fid, pn string) []FavoriteListItemVideo {
 	client := http.Client{}
 	body := FavoriteListItem{}
 
