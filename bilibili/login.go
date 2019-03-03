@@ -3,7 +3,9 @@ package bilibili
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"github.com/skip2/go-qrcode"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -45,7 +47,8 @@ func (this qrLogin) heartbeat() (bool, string, error) {
 	}
 
 	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
-		return false, "", err
+		response, _ := ioutil.ReadAll(res.Body)
+		return false, "", errors.New(string(response))
 	}
 
 	if body["status"] == true {

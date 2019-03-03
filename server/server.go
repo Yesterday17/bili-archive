@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"github.com/Yesterday17/bili-archive/bilibili"
 	"github.com/gorilla/websocket"
@@ -36,11 +37,13 @@ func CreateBiliArchiveServer() {
 	handler.HandleFunc("/login-qr", loginQRHandler)
 
 	loginStatusHandler := func(w http.ResponseWriter, req *http.Request) {
-		ok := false
-		ok, cookies, err := code.Check()
-		if err != nil {
-			log.Println(err.Error())
-			ok = false
+		ok, err := false, errors.New("")
+		if code.Image != "" {
+			ok, cookies, err = code.Check()
+			if err != nil {
+				log.Println(err.Error())
+				ok = false
+			}
 		}
 
 		output, err := json.Marshal(map[string]bool{"ok": ok})
