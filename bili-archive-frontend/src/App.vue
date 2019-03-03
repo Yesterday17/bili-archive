@@ -1,44 +1,63 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link>|
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+    <md-steppers md-sync-route md-dynamic-height md-linear>
+      <md-step
+        id="step-welcome"
+        md-label="欢迎"
+        md-description="欢迎使用"
+        :md-editable="true"
+        to="/step-00"
+      >
+        <router-view/>
+      </md-step>
+      <md-step
+        id="step-login"
+        md-label="登录"
+        md-description="扫描二维码"
+        :md-editable="false"
+        to="/step-01"
+      >
+        <router-view/>
+      </md-step>
+      <md-step
+        id="step-select-favorite"
+        md-label="选择收藏夹"
+        md-description="需要存档的视频列表"
+        :md-editable="false"
+        to="/step-02"
+      >
+        <router-view/>
+      </md-step>
+      <md-step
+        id="step-archive"
+        md-label="下载"
+        md-description="存档视频"
+        :md-editable="false"
+        to="/step-03"
+      >
+        <router-view/>
+      </md-step>
+    </md-steppers>
   </div>
 </template>
 
 <script>
 export default {
   data() {
-    return {};
+    return {
+      step: 0
+    };
   },
   created() {
-    const step = localStorage.getItem("step")
-      ? localStorage.getItem("step")
-      : 0;
-    this.$router.push("step-0" + step);
+    this.step = localStorage.getItem("step") ? localStorage.getItem("step") : 0;
+    this.$router.push("step-0" + this.step);
   }
 };
 </script>
 
 <style lang="scss">
-#app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-#nav {
-  padding: 30px;
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
+*:visited {
+  color: inherit;
 }
 
 .fade-enter-active,
