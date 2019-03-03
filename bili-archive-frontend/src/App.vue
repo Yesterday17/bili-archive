@@ -3,6 +3,7 @@
     <md-steppers md-linear md-sync-route md-dynamic-height>
       <md-step
         id="step-00"
+        class="center"
         md-label="欢迎"
         md-description="欢迎使用"
         :md-editable="true"
@@ -10,11 +11,12 @@
         :to="'/step-00'"
       >
         <keep-alive>
-          <router-view/>
+          <router-view v-if="this.display === 0"/>
         </keep-alive>
       </md-step>
       <md-step
         id="step-01"
+        class="center"
         md-label="登录"
         md-description="扫描二维码"
         :md-editable="false"
@@ -22,11 +24,12 @@
         :to="'/step-01'"
       >
         <keep-alive>
-          <router-view/>
+          <router-view v-if="this.display === 1"/>
         </keep-alive>
       </md-step>
       <md-step
         id="step-02"
+        class="center"
         md-label="选择收藏夹"
         md-description="需要存档的视频列表"
         :md-editable="false"
@@ -34,18 +37,19 @@
         :to="'/step-02'"
       >
         <keep-alive>
-          <router-view/>
+          <router-view v-if="this.display === 2"/>
         </keep-alive>
       </md-step>
       <md-step
         id="step-03"
+        class="center"
         md-label="下载"
         md-description="存档视频"
         :md-editable="false"
         :to="'/step-03'"
       >
         <keep-alive>
-          <router-view/>
+          <router-view v-if="this.display === 3"/>
         </keep-alive>
       </md-step>
     </md-steppers>
@@ -60,7 +64,8 @@ export default {
   data() {
     return {
       display: 0,
-      step: 0
+      step: 0,
+      goNextFlag: false
     };
   },
   methods: {
@@ -83,18 +88,18 @@ export default {
 
       // 更新 display 与 step
       localStorage.setItem("step", this.step);
-    },
-    updateView() {
-      const path = this.$route.path;
-      this.display = parseInt(path.substr(path.length - 2, 2));
     }
   },
   watch: {
-    $route: "updateView"
+    $route(from, to) {
+      const path = this.$route.path;
+      this.display = parseInt(path.substr(path.length - 2, 2));
+      this.goNextFlag = this.$route.query.next ? this.$route.query.next : false;
+    }
   },
   computed: {
     canGoNext() {
-      return this.display === 0;
+      return this.display === 0 || this.goNextFlag;
     }
   },
   created() {
@@ -118,6 +123,13 @@ export default {
   position: fixed;
   bottom: 20px;
   right: 20px;
+}
+
+.center {
+  display: flex;
+  display: -webkit-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .fade-enter-active,

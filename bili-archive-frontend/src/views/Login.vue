@@ -1,10 +1,13 @@
 <template>
-  <div id="qr-box">
-    <transition name="fade" mode="out-in">
-      <div v-if="this.timeout">二维码超时</div>
-      <div v-else-if="this.qrCode === ''">加载登录二维码中……</div>
-      <img v-else :src="this.qrCode" alt="qrCode">
-    </transition>
+  <div id="login" class="center">
+    <div id="qr-box" class="center">
+      <transition name="fade" mode="out-in">
+        <div v-if="this.timeout">二维码超时</div>
+        <div v-else-if="this.qrCode === ''">加载登录二维码中……</div>
+        <img v-else :src="this.qrCode" alt="qrCode">
+      </transition>
+    </div>
+    <div>请扫描二维码以登录</div>
   </div>
 </template>
 
@@ -32,7 +35,12 @@ export default {
               .then(json => {
                 if (json.ok) {
                   clearInterval(status);
-                  this.$router.push("step-02");
+                  this.$router.push({
+                    path: this.$router.path,
+                    query: {
+                      next: true
+                    }
+                  });
                 }
               });
           }, 3000);
@@ -48,18 +56,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+#login {
+  margin-top: 100px;
+  margin-bottom: 100px;
+  padding: 25px;
+  width: calc(256px + 2 * 25px);
+  border: 1px solid grey;
+
+  flex-direction: column;
+}
+
 #qr-box {
   width: 256px;
   height: 256px;
-
-  display: flex;
-  display: -webkit-flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-
-  div {
-    position: absolute;
-  }
 }
 </style>
