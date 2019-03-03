@@ -7,13 +7,6 @@ export default {
   name: "Download",
   data() {
     return {};
-  },
-  beforeRouteEnter(to, from, next) {
-    localStorage.setItem("display", "3");
-    next();
-  },
-  mounted() {
-    localStorage.setItem("step", "3");
   }
 };
 </script>

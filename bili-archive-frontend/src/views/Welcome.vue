@@ -46,13 +46,6 @@ export default {
   name: "Welcome",
   data() {
     return {};
-  },
-  beforeRouteEnter(to, from, next) {
-    localStorage.setItem("display", "0");
-    next();
-  },
-  mounted() {
-    localStorage.setItem("step", "0");
   }
 };
 </script>

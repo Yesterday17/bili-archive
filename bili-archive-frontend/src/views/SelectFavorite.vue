@@ -7,13 +7,6 @@ export default {
   name: "SelectFavorite",
   data() {
     return {};
-  },
-  beforeRouteEnter(to, from, next) {
-    localStorage.setItem("display", "2");
-    next();
-  },
-  mounted() {
-    localStorage.setItem("step", "2");
   }
 };
 </script>

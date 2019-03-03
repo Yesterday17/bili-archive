@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <md-steppers md-linear md-sync-route md-dynamic-height @md-changed="toStep">
+    <md-steppers md-linear md-sync-route md-dynamic-height>
       <md-step
         id="step-00"
         md-label="欢迎"
@@ -49,7 +49,7 @@
         </keep-alive>
       </md-step>
     </md-steppers>
-    <md-button id="step-next" class="md-fab md-primary" @click="next">
+    <md-button id="step-next" class="md-fab md-primary" @click="next" :disabled="!this.canGoNext">
       <md-icon>navigate_next</md-icon>
     </md-button>
   </div>
@@ -65,9 +65,8 @@ export default {
   },
   methods: {
     next() {
-      if (localStorage.getItem("display") && localStorage.getItem("step")) {
+      if (localStorage.getItem("step")) {
         // 更新 display 与 step
-        this.display = parseInt(localStorage.getItem("display"));
         this.step = parseInt(localStorage.getItem("step"));
 
         if (this.display !== this.step) {
@@ -83,29 +82,29 @@ export default {
       this.display = this.step;
 
       // 更新 display 与 step
-      localStorage.setItem("display", this.display);
       localStorage.setItem("step", this.step);
     },
-    toStep(step) {
-      alert(step);
+    updateView() {
+      const path = this.$route.path;
+      this.display = parseInt(path.substr(path.length - 2, 2));
     }
   },
+  watch: {
+    $route: "updateView"
+  },
   computed: {
-    active() {
-      return `step-0${this.step}`;
+    canGoNext() {
+      return this.display === 0;
     }
   },
   created() {
-    // 获取或初始化 display 与 step
-    this.display = localStorage.getItem("display")
-      ? parseInt(localStorage.getItem("display"))
-      : 0;
+    // 获取或初始化 step, display
     this.step = localStorage.getItem("step")
       ? parseInt(localStorage.getItem("step"))
       : 0;
+    this.display = this.step;
 
-    // 更新 display 与 step
-    localStorage.setItem("display", this.display);
+    // 更新 step
     localStorage.setItem("step", this.step);
 
     // 路由跳转
