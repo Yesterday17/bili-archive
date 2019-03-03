@@ -15,6 +15,10 @@ export default {
       qrCode: ""
     };
   },
+  beforeRouteEnter(to, from, next) {
+    localStorage.setItem("display", "1");
+    next();
+  },
   mounted() {
     localStorage.setItem("step", "1");
   },

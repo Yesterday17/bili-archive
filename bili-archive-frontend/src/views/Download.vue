@@ -1,19 +1,19 @@
 <template>
-  <div>233</div>
+  <div>Download</div>
 </template>
 
 <script>
 export default {
-  name: "SelectFavorite",
+  name: "Download",
   data() {
     return {};
   },
   beforeRouteEnter(to, from, next) {
-    localStorage.setItem("display", "2");
+    localStorage.setItem("display", "3");
     next();
   },
   mounted() {
-    localStorage.setItem("step", "2");
+    localStorage.setItem("step", "3");
   }
 };
 </script>
