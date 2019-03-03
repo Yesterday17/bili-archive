@@ -37,11 +37,17 @@ func CreateBiliArchiveServer() {
 
 	loginStatusHandler := func(w http.ResponseWriter, req *http.Request) {
 		ok := false
-		ok, cookies = code.Check()
+		ok, cookies, err := code.Check()
+		if err != nil {
+			log.Println(err.Error())
+			ok = false
+		}
+
 		output, err := json.Marshal(map[string]bool{"ok": ok})
 
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err.Error())
+			return
 		}
 
 		if ok {

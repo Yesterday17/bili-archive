@@ -25,7 +25,8 @@ type qrLogin struct {
 }
 
 // heartbeat, should be called per 3 seconds
-func (this qrLogin) heartbeat() (bool, string) {
+func (this qrLogin) heartbeat() (bool, string, error) {
+	var err error
 	body := map[string]interface{}{}
 	client := &http.Client{}
 	cookies := ""
@@ -36,7 +37,7 @@ func (this qrLogin) heartbeat() (bool, string) {
 
 	res, err := client.PostForm("https://passport.bilibili.com/qrcode/getLoginInfo", params)
 	if err != nil {
-		log.Fatal(err.Error())
+		return false, "", err
 	}
 
 	if res.Body != nil {
@@ -44,7 +45,7 @@ func (this qrLogin) heartbeat() (bool, string) {
 	}
 
 	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
-		log.Fatal(err.Error())
+		return false, "", err
 	}
 
 	if body["status"] == true {
@@ -52,7 +53,7 @@ func (this qrLogin) heartbeat() (bool, string) {
 		cookies = data["url"].(string)
 	}
 
-	return body["status"].(bool), cookies
+	return body["status"].(bool), cookies, nil
 }
 
 type QRCode struct {
@@ -61,7 +62,7 @@ type QRCode struct {
 	Image   string
 }
 
-func (this QRCode) Check() (bool, string) {
+func (this QRCode) Check() (bool, string, error) {
 	return this.QRLogin.heartbeat()
 }
 
@@ -69,8 +70,12 @@ func (this QRCode) WaitForLogin() (url.Values, bool) {
 	response := ""
 	cookies := url.Values{}
 	for times := 0; times < 60; times++ {
-		ok, ret := this.Check()
+		ok, ret, err := this.Check()
 		response = ret
+
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 
 		if ok {
 			response = response[42 : len(response)-72]
