@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -21,7 +22,12 @@ func CreateBiliArchiveServer() {
 	handler := http.NewServeMux()
 
 	// Frontend
-	handler.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./server/public"))))
+	path, err := filepath.Abs("./server/public")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("Absolute path: " + path)
+	handler.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(path))))
 
 	// Backend
 	// Get QR Code to login
