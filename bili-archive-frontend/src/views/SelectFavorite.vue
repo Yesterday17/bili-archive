@@ -53,7 +53,10 @@ export default {
       error: "",
 
       showStatus: false,
-      status: ""
+      status: "",
+
+      uname: "",
+      avatar: ""
     };
   },
   computed: {
@@ -64,22 +67,66 @@ export default {
     }
   },
   methods: {
+    clear() {
+      this.currentUser = false;
+      this.uid = "";
+      this.error = "";
+
+      this.showStatus = false;
+      this.status = "";
+
+      this.uname = "";
+      this.avatar = "";
+    },
+    getUserData() {
+      return fetch("//localhost:8080/info?uid=" + this.uid)
+        .then(data => data.json())
+        .then(json => {
+          if (!json.ok || json.data.mid === 0) {
+            alert("用户不存在！");
+            this.clear();
+          } else {
+            this.uname = json.data.name;
+            this.avatar = json.data.face;
+          }
+        });
+    },
     changeMode() {
       // 修改后切换到更新状态
       this.status = "updating";
 
       if (this.currentUser) {
-        // TODO: Fetch data of current user
-        this.showStatus = true;
+        fetch("//localhost:8080/current-user")
+          .then(data => data.json())
+          .then(json => {
+            if (!json.ok) {
+              this.currentUser = false;
+              this.status = "";
+              alert(json.message);
+            } else {
+              this.uid = json.uid;
+              // 获取该 UID 的详细信息
+              this.getUserData().then(() => {
+                this.status = `用户名: ${this.uname}, UID: ${this.uid}`;
+                this.showStatus = true;
+              });
+            }
+          });
       } else if (!this.uid.match(/^\d*$/)) {
         this.error = "UID非法！应为纯数字！（匹配/^\\d*$/）";
+        this.status = "";
       } else {
         // 判断到这里没有错误了
         this.error = "";
+        this.getUserData().then(() => {
+          this.status = `用户名: ${this.uname}, UID: ${this.uid}`;
+          this.showStatus = true;
+        });
       }
     },
     next() {
       this.showStatus = false;
+      localStorage.setItem("uid", this.uid);
       this.$router.push({
         path: this.$router.path,
         query: {
