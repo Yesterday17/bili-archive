@@ -33,8 +33,6 @@ export default {
   data() {
     return {
       uid: 0,
-      ws: undefined,
-
       status: ""
     };
   },
@@ -44,13 +42,13 @@ export default {
       localStorage.setItem("step", 0);
       this.$router.push("step-00");
     } else {
-      this.uid = localStorage.getItem("uid");
-      this.ws = new WebSocket("ws://localhost:8080/ws");
+      this.uid = parseInt(localStorage.getItem("uid"));
+      const ws = new WebSocket("ws://localhost:8080/ws");
 
-      ws.addEventListener("message", function(event) {
+      ws.addEventListener("message", event => {
         this.status = event.data;
       });
-      ws.addEventListener("open", function() {
+      ws.addEventListener("open", () => {
         ws.send(this.uid);
       });
     }
