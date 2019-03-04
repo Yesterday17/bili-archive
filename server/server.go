@@ -24,6 +24,7 @@ func CreateBiliArchiveServer() {
 	handler.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir("./server/public"))))
 
 	// Backend
+	// Get QR Code to login
 	loginQRHandler := func(w http.ResponseWriter, req *http.Request) {
 		code = bilibili.GetLoginQRCode()
 		output, err := json.Marshal(map[string]string{"image": code.Image})
@@ -36,6 +37,7 @@ func CreateBiliArchiveServer() {
 	}
 	handler.HandleFunc("/login-qr", loginQRHandler)
 
+	// Get Login status
 	loginStatusHandler := func(w http.ResponseWriter, req *http.Request) {
 		ok, err := false, errors.New("")
 		if code.Image != "" {
@@ -68,6 +70,58 @@ func CreateBiliArchiveServer() {
 	}
 	handler.HandleFunc("/login-status", loginStatusHandler)
 
+	// currentUserData
+	currentUserHandler := func(w http.ResponseWriter, rq *http.Request) {
+		message, uid := "", "-1"
+		if cookies == "" {
+			message = "用户未登录"
+		} else {
+			uid = bilibili.GetUserMID(cookies)
+		}
+
+		output, err := json.Marshal(map[string]interface{}{
+			"ok":      uid != "-1",
+			"message": message,
+			"uid":     uid,
+		})
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(output)
+	}
+	handler.HandleFunc("/current-user", currentUserHandler)
+
+	// MIDInfo
+	// currentUserData
+	midInfo := func(w http.ResponseWriter, rq *http.Request) {
+		uid := rq.URL.Query().Get("uid")
+		if uid == "" {
+			uid = "-1"
+		}
+
+		data, err := bilibili.GetMIDInfo(uid)
+		if err != nil {
+			log.Println(err)
+		}
+
+		output, err := json.Marshal(map[string]interface{}{
+			"ok":   uid != "-1",
+			"data": data,
+		})
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(output)
+	}
+	handler.HandleFunc("/info", midInfo)
+
+	// Download, transfer data with Websocket
 	iterateFavHandler := func(w http.ResponseWriter, req *http.Request) {
 		upgrader := websocket.Upgrader{
 			ReadBufferSize:  1024,
