@@ -1,13 +1,23 @@
 <template>
-  <div id="login" class="center">
+  <div id="login" class="center column">
     <div id="qr-box" class="center">
       <transition name="fade" mode="out-in">
-        <div v-if="this.timeout">二维码超时</div>
+        <div v-if="this.timeout" class="center column">
+          <div>二维码已超时</div>
+          <md-button class="md-dense md-raised md-primary" @click="refresh">点击刷新</md-button>
+        </div>
         <div v-else-if="this.qrCode === ''">加载登录二维码中……</div>
         <img v-else :src="this.qrCode" alt="qrCode">
       </transition>
     </div>
-    <div>请扫描二维码以登录</div>
+    <div>
+      <md-icon>{{this.logined ? 'verified_user' : 'sync'}}</md-icon>
+      <span>{{ this.logined ? '登录成功，请点击下一步。' : '扫描二维码以登录' }}</span>
+    </div>
+    <div v-if="!logined">
+      <p>登录检查每 3 秒进行一次</p>
+      <p>二维码超时时间为 300 秒</p>
+    </div>
   </div>
 </template>
 
@@ -17,6 +27,7 @@ export default {
   data() {
     return {
       timeout: false,
+      logined: false,
       qrCode: ""
     };
   },
@@ -35,6 +46,7 @@ export default {
               .then(json => {
                 if (json.ok) {
                   clearInterval(status);
+                  this.logined = true;
                   this.$router.push({
                     path: this.$router.path,
                     query: {
@@ -50,6 +62,11 @@ export default {
             clearInterval(timeout);
           }, 300000);
         });
+    },
+    refresh() {
+      this.qrCode = "";
+      this.timeout = false;
+      this.getQRCode();
     }
   }
 };
@@ -61,9 +78,12 @@ export default {
   margin-bottom: 100px;
   padding: 25px;
   width: calc(256px + 2 * 25px);
+  height: 404.6px;
   border: 1px solid grey;
 
-  flex-direction: column;
+  p {
+    margin-bottom: 5px;
+  }
 }
 
 #qr-box {
