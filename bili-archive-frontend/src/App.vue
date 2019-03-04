@@ -125,6 +125,16 @@ export default {
   right: 20px;
 }
 
+#app,
+.md-steppers,
+.md-stepper {
+  height: 100%;
+}
+
+.md-steppers-wrapper {
+  height: 90% !important;
+}
+
 .center {
   display: flex;
   display: -webkit-flex;
