@@ -136,6 +136,23 @@ export default {
   flex-direction: column;
 }
 
+// rotate animation
+.rotate {
+  animation: rotate 3s linear infinite;
+  transform-origin: 50% 50%;
+}
+
+@keyframes rotate {
+  0% {
+    transform: translate(0px, 0px) rotate(0deg);
+  }
+
+  100% {
+    transform: translate(0px, 0px) rotate(-50deg);
+  }
+}
+
+// fade transition
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s;

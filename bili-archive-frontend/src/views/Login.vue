@@ -11,7 +11,10 @@
       </transition>
     </div>
     <div>
-      <md-icon>{{this.logined ? 'verified_user' : 'sync'}}</md-icon>
+      <div id="login-icon" class="rotate">
+        <md-icon v-if="this.logined">verified_user'</md-icon>
+        <md-icon v-else>sync</md-icon>
+      </div>
       <span>{{ this.logined ? '登录成功，请点击下一步。' : '扫描二维码以登录' }}</span>
     </div>
     <div v-if="!logined">
@@ -89,5 +92,9 @@ export default {
 #qr-box {
   width: 256px;
   height: 256px;
+}
+
+#login-icon {
+  display: inline-block;
 }
 </style>
