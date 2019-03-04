@@ -178,7 +178,7 @@ func CreateBiliArchiveServer() {
 							log.Println(err)
 							continue
 						}
-						err = downloader.Download(item, url)
+						err = downloader.Download(item, url, 5)
 						if err != nil {
 							log.Println(err)
 						}
