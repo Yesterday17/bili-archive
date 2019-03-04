@@ -11,7 +11,7 @@
       </transition>
     </div>
     <div>
-      <div id="login-icon" class="rotate">
+      <div id="login-icon" :class="this.logined ? '' : 'rotate'">
         <md-icon v-if="this.logined">verified_user'</md-icon>
         <md-icon v-else>sync</md-icon>
       </div>
@@ -31,7 +31,10 @@ export default {
     return {
       timeout: false,
       logined: false,
-      qrCode: ""
+      qrCode: "",
+
+      iStatus: undefined,
+      iTimeout: undefined
     };
   },
   created() {
@@ -43,12 +46,13 @@ export default {
         .then(data => data.json())
         .then(json => (this.qrCode = json.image))
         .then(() => {
-          const status = setInterval(() => {
+          this.iStatus = setInterval(() => {
             fetch("//localhost:8080/login-status")
               .then(data => data.json())
               .then(json => {
                 if (json.ok) {
-                  clearInterval(status);
+                  clearInterval(this.iStatus);
+                  clearInterval(this.iTimeout);
                   this.logined = true;
                   this.$router.push({
                     path: this.$router.path,
@@ -60,9 +64,9 @@ export default {
               });
           }, 3000);
 
-          const timeout = setInterval(() => {
-            clearInterval(status);
-            clearInterval(timeout);
+          this.iTimeout = setInterval(() => {
+            clearInterval(this.iStatus);
+            clearInterval(this.iTimeout);
           }, 300000);
         });
     },
