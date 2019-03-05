@@ -26,3 +26,6 @@ video/
 
 # statik Generated Files
 statik/
+
+# Frontend Built Files
+public/
