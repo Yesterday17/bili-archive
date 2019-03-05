@@ -59,6 +59,11 @@ export default {
       avatar: ""
     };
   },
+  mounted() {
+    if (localStorage.getItem("uid")) {
+      this.uid = localStorage.getItem("uid");
+    }
+  },
   computed: {
     uidClass() {
       return {
@@ -94,6 +99,7 @@ export default {
     changeMode() {
       // 修改后切换到更新状态
       this.status = "updating";
+      this.showStatus = false;
 
       if (this.currentUser) {
         fetch("//localhost:8080/api/current-user")

@@ -91,7 +91,7 @@ export default {
     }
   },
   watch: {
-    $route(from, to) {
+    $route() {
       const path = this.$route.path;
       this.display = parseInt(path.substr(path.length - 2, 2));
       this.goNextFlag = this.$route.query.next ? this.$route.query.next : false;
@@ -104,7 +104,9 @@ export default {
   },
   created() {
     // 获取或初始化 step, display
-    this.step = localStorage.getItem("step")
+    this.step = localStorage.getItem("uid")
+      ? 0
+      : localStorage.getItem("step")
       ? parseInt(localStorage.getItem("step"))
       : 0;
     this.display = this.step;
