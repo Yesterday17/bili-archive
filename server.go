@@ -40,7 +40,7 @@ func CreateBiliArchiveServer() {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(output)
 	}
-	handler.HandleFunc("/login-qr", loginQRHandler)
+	handler.HandleFunc("/api/login-qr", loginQRHandler)
 
 	// Get Login status
 	loginStatusHandler := func(w http.ResponseWriter, req *http.Request) {
@@ -73,7 +73,7 @@ func CreateBiliArchiveServer() {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(output)
 	}
-	handler.HandleFunc("/login-status", loginStatusHandler)
+	handler.HandleFunc("/api/login-status", loginStatusHandler)
 
 	// currentUserData
 	currentUserHandler := func(w http.ResponseWriter, rq *http.Request) {
@@ -97,7 +97,7 @@ func CreateBiliArchiveServer() {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(output)
 	}
-	handler.HandleFunc("/current-user", currentUserHandler)
+	handler.HandleFunc("/api/current-user", currentUserHandler)
 
 	// MIDInfo
 	// currentUserData
@@ -124,7 +124,7 @@ func CreateBiliArchiveServer() {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(output)
 	}
-	handler.HandleFunc("/info", midInfo)
+	handler.HandleFunc("/api/info", midInfo)
 
 	// Download, transfer data with Websocket
 	iterateFavHandler := func(w http.ResponseWriter, req *http.Request) {
