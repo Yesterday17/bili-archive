@@ -7,6 +7,7 @@
           <md-button class="md-dense md-raised md-primary" @click="refresh">点击刷新</md-button>
         </div>
         <div v-else-if="this.qrCode === ''">加载登录二维码中……</div>
+        <div v-else-if="this.qrCode === 'cookies_exist'">用户已登录，请稍等。</div>
         <img v-else :src="this.qrCode" alt="qrCode">
       </transition>
     </div>

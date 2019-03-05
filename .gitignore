@@ -24,6 +24,9 @@ vendor
 # Video Files
 video/
 
+# Configuration File
+config.json
+
 # statik Generated Files
 statik/
 
