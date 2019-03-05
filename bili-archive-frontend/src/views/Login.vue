@@ -65,6 +65,7 @@ export default {
           }, 3000);
 
           this.iTimeout = setInterval(() => {
+            this.timeout = true;
             clearInterval(this.iStatus);
             clearInterval(this.iTimeout);
           }, 300000);
