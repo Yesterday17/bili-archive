@@ -5,6 +5,5 @@ import (
 )
 
 func main() {
-	// fmt.Println(bilibili.GetUserFavoriteListReport("123817257", false))
 	server.CreateBiliArchiveServer()
 }

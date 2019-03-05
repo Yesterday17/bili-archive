@@ -5,15 +5,15 @@ import (
 	"errors"
 	"flag"
 	"github.com/Yesterday17/bili-archive/bilibili"
+	_ "github.com/Yesterday17/bili-archive/statik"
 	"github.com/gorilla/websocket"
 	"github.com/iawia002/annie/config"
 	"github.com/iawia002/annie/downloader"
+	"github.com/rakyll/statik/fs"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
-	"time"
 )
 
 func CreateBiliArchiveServer() {
@@ -21,13 +21,12 @@ func CreateBiliArchiveServer() {
 	code := bilibili.QRCode{}
 	handler := http.NewServeMux()
 
-	// Frontend
-	path, err := filepath.Abs("./server/public")
+	// 前端
+	statikFS, err := fs.New()
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println("Absolute path: " + path)
-	handler.Handle("/", http.StripPrefix("/", http.FileServer(http.Dir(path))))
+	handler.Handle("/", http.FileServer(statikFS))
 
 	// Backend
 	// Get QR Code to login
@@ -197,13 +196,7 @@ func CreateBiliArchiveServer() {
 	}
 	handler.HandleFunc("/ws", iterateFavHandler)
 
-	server := &http.Server{
-		Addr:        ":8080",
-		Handler:     handler,
-		ReadTimeout: 5 * time.Second,
-	}
-
-	if err := server.ListenAndServe(); err != nil {
+	if err := http.ListenAndServe(":8080", handler); err != nil {
 		log.Fatal(err)
 	}
 }

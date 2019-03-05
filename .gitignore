@@ -23,3 +23,6 @@ vendor
 
 # Video Files
 video/
+
+# statik Generated Files
+statik/
