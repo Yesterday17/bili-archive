@@ -78,14 +78,17 @@ type favoriteListItemVideoDimension struct {
 	Rotate int `json:"rotate"`
 }
 
-func GetFavoriteListItems(mid, fid, pn string) []FavoriteListItemVideo {
+func GetFavoriteListItems(mid, fid, pn, cookies string) []FavoriteListItemVideo {
 	client := http.Client{}
 	body := FavoriteListItem{}
 
-	res, err := client.Get("https://api.bilibili.com/x/space/fav/arc?vmid=" + mid + "&fid=" + fid + "&pn=" + pn)
+	req, err := http.NewRequest("GET", "https://api.bilibili.com/x/space/fav/arc?vmid="+mid+"&fid="+fid+"&pn="+pn, nil)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+
+	req.Header.Set("Cookie", cookies)
+	res, err := client.Do(req)
 	if res.Body != nil {
 		defer res.Body.Close()
 	}

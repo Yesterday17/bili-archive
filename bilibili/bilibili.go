@@ -16,7 +16,7 @@ func IterateFavoriteList(mid string, cookies string, callback func(key, value st
 		callback("Favorite", value.Name, value)
 
 		for i := 0; i < int(math.Ceil(float64(value.CurrentCount)/30.0)); i++ {
-			for _, data := range GetFavoriteListItems(mid, fid, strconv.Itoa(i+1)) {
+			for _, data := range GetFavoriteListItems(mid, fid, strconv.Itoa(i+1), cookies) {
 				aid := strconv.Itoa(data.AID)
 				callback("Video", data.Title, data)
 
