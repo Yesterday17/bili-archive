@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/Yesterday17/bili-archive/bilibili"
 	_ "github.com/Yesterday17/bili-archive/statik"
 	"github.com/gorilla/websocket"
@@ -270,14 +271,15 @@ func CreateBiliArchiveServer() {
 			return
 		}
 
+		outputName := fmt.Sprintf("%s - %s", data.Title, data.Page.PageName)
 		outputPath := "./video/" + string(data.FavTitle)
 
-		if _, err := os.Stat(config.OutputPath + "/" + config.OutputName + ".flv"); os.IsNotExist(err) {
-			if _, err := os.Stat(config.OutputPath + "/" + config.OutputName + ".mp4"); os.IsNotExist(err) {
+		if _, err := os.Stat(outputPath + "/" + outputName + ".flv"); os.IsNotExist(err) {
+			if _, err := os.Stat(outputPath + "/" + outputName + ".mp4"); os.IsNotExist(err) {
 				// 获得视频链接
 				item := bilibili.ExtractVideo(data, configuration.Cookies)
 				if item.Err != nil {
-					log.Println(err)
+					log.Println(item.Err)
 					result := map[string]interface{}{
 						"status": "error",
 						"data":   item.Err,
@@ -285,6 +287,7 @@ func CreateBiliArchiveServer() {
 					if err := ws.WriteJSON(&result); err != nil {
 						log.Println(err)
 					}
+					return
 				}
 
 				// 下载视频
