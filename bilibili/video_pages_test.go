@@ -1,7 +1,7 @@
 package bilibili
 
 import (
-	"strconv"
+	"fmt"
 	"testing"
 )
 
@@ -51,12 +51,12 @@ func Test_GetVideoPages(t *testing.T) {
 
 	for _, page := range pages {
 		if page.CID != cids[page.Page-1] {
-			t.Error("CID not match! Expected " + strconv.Itoa(cids[page.Page-1]) + ", but got " + strconv.Itoa(page.CID) + ".")
+			t.Error(fmt.Sprintf("[×][分P] CID 不匹配! 应为 %d, 实为 %d。", cids[page.Page-1], page.CID))
 		}
 
 		if page.PageName != pageNames[page.Page-1] {
-			t.Error("PageName not match! Expected " + pageNames[page.Page-1] + ", but got " + page.PageName + ".")
+			t.Error(fmt.Sprintf("[×][分P] 分P名称不匹配! 应为 %s, 实为 %s。", pageNames[page.Page-1], page.PageName))
 		}
-		t.Log("Success!")
+		t.Log(fmt.Sprintf("[√][分P] P%d: %s(%d)", page.Page, page.PageName, page.CID))
 	}
 }

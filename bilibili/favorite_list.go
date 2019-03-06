@@ -1,9 +1,7 @@
 package bilibili
 
 import (
-	"encoding/json"
-	"log"
-	"net/http"
+	"github.com/Yesterday17/bili-archive/utils"
 )
 
 type favoriteList struct {
@@ -43,28 +41,12 @@ type favoriteListItemCover struct {
 	Type    int    `json:"type"`
 }
 
-func GetFavoriteList(mid string, cookies string) []favoriteListItem {
-	client := http.Client{}
+func GetFavoriteList(mid string, cookies string) ([]favoriteListItem, error) {
 	body := favoriteList{}
 
-	req, err := http.NewRequest("GET", "http://api.bilibili.com/x/space/fav/nav?mid="+mid, nil)
-	if err != nil {
-		log.Fatal(err.Error())
+	if err := utils.GetJson("http://api.bilibili.com/x/space/fav/nav?mid="+mid, cookies, &body); err != nil {
+		return nil, err
 	}
 
-	req.Header.Set("Cookie", cookies)
-	res, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-	if res.Body != nil {
-		defer res.Body.Close()
-	}
-
-	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
-		log.Fatal(err.Error())
-	}
-
-	return body.Data.Archive
+	return body.Data.Archive, nil
 }

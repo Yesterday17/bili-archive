@@ -11,7 +11,8 @@ func addLine(original *string, line string) {
 }
 
 func IterateFavoriteList(mid string, cookies string, callback func(key, value string, data interface{})) {
-	for _, value := range GetFavoriteList(mid, cookies) {
+	favList, _ := GetFavoriteList(mid, cookies)
+	for _, value := range favList {
 		fid := strconv.Itoa(value.FID)
 		callback("Favorite", value.Name, value)
 

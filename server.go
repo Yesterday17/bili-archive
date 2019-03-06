@@ -178,14 +178,11 @@ func CreateBiliArchiveServer() {
 			uid = "-1"
 		}
 
-		list := bilibili.GetFavoriteList(uid, configuration.Cookies)
-		output, err := json.Marshal(map[string]interface{}{
+		list, _ := bilibili.GetFavoriteList(uid, configuration.Cookies)
+		output, _ := json.Marshal(map[string]interface{}{
 			"ok":   list != nil,
 			"data": list,
 		})
-		if err != nil {
-			log.Fatal(err)
-		}
 
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(output)

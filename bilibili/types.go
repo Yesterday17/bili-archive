@@ -31,18 +31,6 @@ type token struct {
 	Data    tokenData `json:"data"`
 }
 
-type bangumiEpData struct {
-	Aid  int `json:"aid"`
-	Cid  int `json:"cid"`
-	ID   int `json:"id"`
-	EpID int `json:"ep_id"`
-}
-
-type bangumiData struct {
-	EpInfo bangumiEpData   `json:"epInfo"`
-	EpList []bangumiEpData `json:"epList"`
-}
-
 type videoPagesData struct {
 	Cid  int    `json:"cid"`
 	Part string `json:"part"`
