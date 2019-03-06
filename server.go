@@ -15,6 +15,14 @@ import (
 	"strconv"
 )
 
+type DownloadVideoRequest struct {
+	Aid       string `json:"aid"`
+	Page      string `json:"page"`
+	AidTitle  string `json:"aid_title"`
+	PageTitle string `json:"page_title"`
+	FavTitle  string `json:"fav_title"`
+}
+
 func CreateBiliArchiveServer() {
 	code := bilibili.QRCode{}
 	handler := http.NewServeMux()
@@ -27,7 +35,10 @@ func CreateBiliArchiveServer() {
 	handler.Handle("/", http.FileServer(frontend))
 
 	// 后端
-	// 获得登录所需要的 二维码
+	// Path: /api/login-qr
+	// Method: GET
+	// Description: 获得登录所需要的二维码
+	// Response: @image string
 	loginQRHandler := func(w http.ResponseWriter, req *http.Request) {
 		// 检测 Cookies 是否过期
 		if configuration.Cookies == "" || bilibili.GetUserMID(configuration.Cookies) == "-1" {
@@ -50,7 +61,10 @@ func CreateBiliArchiveServer() {
 	}
 	handler.HandleFunc("/api/login-qr", loginQRHandler)
 
-	// 获取登录状态
+	// Path: /api/login-status
+	// Method: GET
+	// Description: 获取登录状态
+	// Response: @ok boolean
 	loginStatusHandler := func(w http.ResponseWriter, req *http.Request) {
 		tmpCookies := ""
 		ok, err := false, errors.New("")
@@ -98,8 +112,13 @@ func CreateBiliArchiveServer() {
 	}
 	handler.HandleFunc("/api/login-status", loginStatusHandler)
 
-	// 当前用户信息
-	currentUserHandler := func(w http.ResponseWriter, rq *http.Request) {
+	// Path: /api/current-user
+	// Method: GET
+	// Description: 当前用户信息
+	// Response: @ok boolean
+	// 			 @message string
+	// 			 @uid strng
+	currentUserHandler := func(w http.ResponseWriter, req *http.Request) {
 		message, uid := "", "-1"
 		if configuration.Cookies == "" {
 			message = "用户未登录"
@@ -122,10 +141,14 @@ func CreateBiliArchiveServer() {
 	}
 	handler.HandleFunc("/api/current-user", currentUserHandler)
 
-	// MIDInfo
-	// currentUserData
-	midInfo := func(w http.ResponseWriter, rq *http.Request) {
-		uid := rq.URL.Query().Get("uid")
+	// Path: /api/info
+	// Method: GET
+	// Params: @uid string
+	// Description: 用户信息
+	// Response: @ok boolean
+	// 			 @data MIDInfo
+	midInfo := func(w http.ResponseWriter, req *http.Request) {
+		uid := req.URL.Query().Get("uid")
 		if uid == "" {
 			uid = "-1"
 		}
@@ -148,6 +171,146 @@ func CreateBiliArchiveServer() {
 		w.Write(output)
 	}
 	handler.HandleFunc("/api/info", midInfo)
+
+	// Path: /api/favlist
+	// Method: GET
+	// Params: @uid string
+	// Description: 收藏列表
+	// Response: @ok boolean
+	// 			 @data favoriteListItem[]
+	favList := func(w http.ResponseWriter, req *http.Request) {
+		uid := req.URL.Query().Get("uid")
+		if uid == "" {
+			uid = "-1"
+		}
+
+		list := bilibili.GetFavoriteList(uid, configuration.Cookies)
+		output, err := json.Marshal(map[string]interface{}{
+			"ok":   list != nil,
+			"data": list,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(output)
+	}
+	handler.HandleFunc("/api/favlist", favList)
+
+	// Path: /api/fav
+	// Method: GET
+	// Params: @uid string
+	// 		   @fid string
+	// Description: 收藏详情
+	// Response: @ok boolean
+	// 			 @data FavoriteListItemVideo[]
+	favDetail := func(w http.ResponseWriter, req *http.Request) {
+		uid := req.URL.Query().Get("uid")
+		fid := req.URL.Query().Get("fid")
+		pn := req.URL.Query().Get("pn")
+
+		var list []bilibili.FavoriteListItemVideo = nil
+		if uid != "" && fid != "" {
+			list = bilibili.GetFavoriteListItems(uid, fid, pn, configuration.Cookies)
+		}
+
+		output, err := json.Marshal(map[string]interface{}{
+			"ok":   list != nil,
+			"data": list,
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(output)
+	}
+	handler.HandleFunc("/api/fav", favDetail)
+
+	// Path: /download
+	// Method: WebSocket
+	// Send: @aid  string
+	// 		 @page string
+	// 		 @fav  string
+	// Description: 下载视频
+	// Response: 进度
+	downloadVideo := func(w http.ResponseWriter, req *http.Request) {
+		upgrader := websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+		}
+
+		ws, err := upgrader.Upgrade(w, req, nil)
+		if err != nil {
+			log.Println(err)
+			result := map[string]interface{}{
+				"status": "error",
+				"data":   err,
+			}
+			if err := ws.WriteJSON(&result); err != nil {
+				log.Println(err)
+			}
+			return
+		}
+		defer ws.Close()
+
+		data := DownloadVideoRequest{}
+		if err := ws.ReadJSON(&data); err != nil {
+			log.Println(err)
+			result := map[string]interface{}{
+				"status": "error",
+				"data":   err,
+			}
+			if err := ws.WriteJSON(&result); err != nil {
+				log.Println(err)
+			}
+			return
+		}
+
+		if err := os.MkdirAll("./video/"+data.FavTitle, os.ModePerm); err != nil {
+			log.Println(err)
+			result := map[string]interface{}{
+				"status": "error",
+				"data":   err,
+			}
+			if err := ws.WriteJSON(&result); err != nil {
+				log.Println(err)
+			}
+			return
+		}
+
+		config.OutputPath = "./video/" + string(data.FavTitle)
+		config.OutputName = data.AidTitle + " - " + data.PageTitle
+
+		if _, err := os.Stat(config.OutputPath + "/" + config.OutputName + ".flv"); os.IsNotExist(err) {
+			url := "https://www.bilibili.com/video/av" + data.Aid + "/?p=" + data.Page
+
+			v, err := bilibili.Extract(url)
+			if err != nil {
+				log.Println(err)
+			}
+
+			for _, item := range v {
+				if item.Err != nil {
+					log.Println(err)
+					continue
+				}
+				err = downloader.Download(item, url, 5)
+				if err != nil {
+					log.Println(err)
+					result := map[string]interface{}{
+						"status": "error",
+						"data":   err,
+					}
+					if err := ws.WriteJSON(&result); err != nil {
+						log.Println(err)
+					}
+				}
+			}
+		}
+	}
+	handler.HandleFunc("/download", downloadVideo)
 
 	// Download, transfer data with Websocket
 	iterateFavHandler := func(w http.ResponseWriter, req *http.Request) {
