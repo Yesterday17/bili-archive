@@ -8,20 +8,13 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/iawia002/annie/config"
 	"github.com/iawia002/annie/downloader"
+	bilibili_annie "github.com/iawia002/annie/extractors/bilibili"
 	"github.com/rakyll/statik/fs"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 )
-
-type DownloadVideoRequest struct {
-	Aid       string `json:"aid"`
-	Page      string `json:"page"`
-	AidTitle  string `json:"aid_title"`
-	PageTitle string `json:"page_title"`
-	FavTitle  string `json:"fav_title"`
-}
 
 func CreateBiliArchiveServer() {
 	code := bilibili.QRCode{}
@@ -255,7 +248,7 @@ func CreateBiliArchiveServer() {
 		}
 		defer ws.Close()
 
-		data := DownloadVideoRequest{}
+		data := bilibili.DownloadVideoRequest{}
 		if err := ws.ReadJSON(&data); err != nil {
 			log.Println(err)
 			result := map[string]interface{}{
@@ -281,31 +274,31 @@ func CreateBiliArchiveServer() {
 		}
 
 		config.OutputPath = "./video/" + string(data.FavTitle)
-		config.OutputName = data.AidTitle + " - " + data.PageTitle
+		config.OutputName = data.Title + " - " + data.Page.PageName
 
 		if _, err := os.Stat(config.OutputPath + "/" + config.OutputName + ".flv"); os.IsNotExist(err) {
-			url := "https://www.bilibili.com/video/av" + data.Aid + "/?p=" + data.Page
+			url := "https://www.bilibili.com/video/av" + data.Aid + "/?p=" + strconv.Itoa(data.Page.Page)
 
-			v, err := bilibili.Extract(url)
-			if err != nil {
+			item := bilibili.ExtractVideo(data, configuration.Cookies)
+			if item.Err != nil {
 				log.Println(err)
+				result := map[string]interface{}{
+					"status": "error",
+					"data":   item.Err,
+				}
+				if err := ws.WriteJSON(&result); err != nil {
+					log.Println(err)
+				}
 			}
 
-			for _, item := range v {
-				if item.Err != nil {
-					log.Println(err)
-					continue
+			if err = downloader.Download(item, url, 5); err != nil {
+				log.Println(err)
+				result := map[string]interface{}{
+					"status": "error",
+					"data":   err,
 				}
-				err = downloader.Download(item, url, 5)
-				if err != nil {
+				if err := ws.WriteJSON(&result); err != nil {
 					log.Println(err)
-					result := map[string]interface{}{
-						"status": "error",
-						"data":   err,
-					}
-					if err := ws.WriteJSON(&result); err != nil {
-						log.Println(err)
-					}
 				}
 			}
 		}
@@ -313,6 +306,7 @@ func CreateBiliArchiveServer() {
 	handler.HandleFunc("/download", downloadVideo)
 
 	// Download, transfer data with Websocket
+	// Deprecated
 	iterateFavHandler := func(w http.ResponseWriter, req *http.Request) {
 		upgrader := websocket.Upgrader{
 			ReadBufferSize:  1024,
@@ -361,7 +355,7 @@ func CreateBiliArchiveServer() {
 				if _, err := os.Stat(config.OutputPath + "/" + config.OutputName + ".flv"); os.IsNotExist(err) {
 					url := "https://www.bilibili.com/video/av" + av + "/?p=" + page
 
-					v, err := bilibili.Extract(url)
+					v, err := bilibili_annie.Extract(url)
 					if err != nil {
 						log.Println(err)
 					}
