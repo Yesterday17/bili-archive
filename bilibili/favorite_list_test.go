@@ -8,7 +8,7 @@ func Test_GetFavoriteList(t *testing.T) {
 	// 收藏夹基本没有变动
 	list, err := GetFavoriteList("4", "")
 	if err != nil {
-		t.Error(err)
+		t.Error("[×][收藏列表] " + err.Error())
 	}
 
 	if len(list) != 3 {

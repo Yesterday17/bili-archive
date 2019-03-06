@@ -1,9 +1,8 @@
 package bilibili
 
 import (
-	"encoding/json"
-	"log"
-	"net/http"
+	"fmt"
+	"github.com/Yesterday17/bili-archive/utils"
 )
 
 type FavoriteListItem struct {
@@ -78,24 +77,15 @@ type favoriteListItemVideoDimension struct {
 	Rotate int `json:"rotate"`
 }
 
-func GetFavoriteListItems(mid, fid, pn, cookies string) []FavoriteListItemVideo {
-	client := http.Client{}
+func GetFavoriteListItems(mid, fid, pn, cookies string) ([]FavoriteListItemVideo, error) {
 	body := FavoriteListItem{}
-
-	req, err := http.NewRequest("GET", "https://api.bilibili.com/x/space/fav/arc?vmid="+mid+"&fid="+fid+"&pn="+pn, nil)
-	if err != nil {
-		log.Fatal(err.Error())
+	if err := utils.GetJson(
+		fmt.Sprintf("https://api.bilibili.com/x/space/fav/arc?vmid=%s&fid=%s&pn=%s", mid, fid, pn),
+		cookies,
+		&body,
+	); err != nil {
+		return nil, err
 	}
 
-	req.Header.Set("Cookie", cookies)
-	res, err := client.Do(req)
-	if res.Body != nil {
-		defer res.Body.Close()
-	}
-
-	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
-		log.Fatal(err.Error())
-	}
-
-	return body.Data.Archives
+	return body.Data.Archives, nil
 }

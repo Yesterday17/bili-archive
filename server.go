@@ -203,17 +203,13 @@ func CreateBiliArchiveServer() {
 
 		var list []bilibili.FavoriteListItemVideo = nil
 		if uid != "" && fid != "" {
-			list = bilibili.GetFavoriteListItems(uid, fid, pn, configuration.Cookies)
+			list, _ = bilibili.GetFavoriteListItems(uid, fid, pn, configuration.Cookies)
 		}
 
-		output, err := json.Marshal(map[string]interface{}{
+		output, _ := json.Marshal(map[string]interface{}{
 			"ok":   list != nil,
 			"data": list,
 		})
-		if err != nil {
-			log.Fatal(err)
-		}
-
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(output)
 	}
