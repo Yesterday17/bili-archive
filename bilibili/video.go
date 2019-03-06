@@ -3,9 +3,8 @@ package bilibili
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Yesterday17/bili-archive/utils"
 	"github.com/iawia002/annie/downloader"
-	"github.com/iawia002/annie/request"
-	"github.com/iawia002/annie/utils"
 	"strconv"
 )
 
@@ -15,12 +14,10 @@ const (
 )
 
 const (
-	// 会变化的 appKey 和 secKey
+	// 随时需要更新的 appKey 和 secKey
 	appKey = "iVGUTjsxvpLeuDCf"
 	secKey = "aHRmhWMLkdeMuILqORnYZocwMBpMEOdt"
 )
-
-const referer = "https://www.bilibili.com"
 
 type DownloadVideoRequest struct {
 	Title    string           `json:"title"`
@@ -31,30 +28,21 @@ type DownloadVideoRequest struct {
 
 type RequestVideoPage struct {
 	Page     int    `json:"page"`
-	PageName string `json:"pagename"`
+	PageName string `json:"page_name"`
 	CID      string `json:"cid"`
 }
 
 var uToken string
 
 // 生成 API
-func GenAPI(aid, cid, quality, cookies string) (string, error) {
+func genAPI(aid, cid, quality, cookies string) (string, error) {
 	var (
-		err        error
-		baseAPIURL string
-		params     string
+		err    error
+		params string
 	)
 	if cookies != "" && uToken == "" {
-		uToken, err = request.Get(
-			fmt.Sprintf("%said=%s&cid=%s", bilibiliTokenAPI, aid, cid),
-			referer,
-			nil,
-		)
-		if err != nil {
-			return "", err
-		}
 		var t token
-		err = json.Unmarshal([]byte(uToken), &t)
+		err = utils.GetJson(fmt.Sprintf("%said=%s&cid=%s", bilibiliTokenAPI, aid, cid), cookies, &t)
 		if err != nil {
 			return "", err
 		}
@@ -68,18 +56,17 @@ func GenAPI(aid, cid, quality, cookies string) (string, error) {
 		"appkey=%s&cid=%s&otype=json&qn=%s&quality=%s&type=",
 		appKey, cid, quality, quality,
 	)
-	baseAPIURL = bilibiliAPI
 
 	api := fmt.Sprintf(
-		"%s%s&sign=%s", baseAPIURL, params, utils.Md5(params+secKey),
+		"%s%s&sign=%s", bilibiliAPI, params, utils.Md5(params+secKey),
 	)
 	if uToken != "" {
-		api = fmt.Sprintf("%s&uToken=%s", api, uToken)
+		api = fmt.Sprintf("%s&utoken=%s", api, uToken)
 	}
 	return api, nil
 }
 
-func GenURL(durl []dURLData) ([]downloader.URL, int64) {
+func genURL(durl []dURLData) ([]downloader.URL, int64) {
 	var size int64
 	urls := make([]downloader.URL, len(durl))
 	for index, data := range durl {
@@ -100,11 +87,11 @@ func ExtractVideo(data DownloadVideoRequest, cookies string) downloader.Data {
 	// Get "accept_quality" and "accept_description"
 	// "accept_description":["高清 1080P","高清 720P","清晰 480P","流畅 360P"],
 	// "accept_quality":[80,48,32,16],
-	api, err := GenAPI(data.Aid, data.Page.CID, "15", cookies)
+	api, err := genAPI(data.Aid, data.Page.CID, "15", cookies)
 	if err != nil {
 		return downloader.EmptyData(url, err)
 	}
-	jsonString, err := request.Get(api, referer, nil)
+	jsonString, err := utils.Get(api, cookies, nil)
 	if err != nil {
 		return downloader.EmptyData(url, err)
 	}
@@ -117,11 +104,11 @@ func ExtractVideo(data DownloadVideoRequest, cookies string) downloader.Data {
 
 	streams := make(map[string]downloader.Stream, len(quality.Quality))
 	for _, q := range quality.Quality {
-		apiURL, err := GenAPI(data.Aid, data.Page.CID, strconv.Itoa(q), cookies)
+		apiURL, err := genAPI(data.Aid, data.Page.CID, strconv.Itoa(q), cookies)
 		if err != nil {
 			return downloader.EmptyData(url, err)
 		}
-		jsonString, err := request.Get(apiURL, referer, nil)
+		jsonString, err := utils.Get(apiURL, cookies, nil)
 		if err != nil {
 			return downloader.EmptyData(url, err)
 		}
@@ -136,7 +123,7 @@ func ExtractVideo(data DownloadVideoRequest, cookies string) downloader.Data {
 			continue
 		}
 
-		urls, size := GenURL(data.DURL)
+		urls, size := genURL(data.DURL)
 		streams[strconv.Itoa(data.Quality)] = downloader.Stream{
 			URLs:    urls,
 			Size:    size,
