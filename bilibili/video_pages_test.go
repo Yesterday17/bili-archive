@@ -44,7 +44,12 @@ func Test_GetVideoPages(t *testing.T) {
 		33550141,
 	}
 
-	for _, page := range GetVideoPages("19922956") {
+	pages, err := GetVideoPages("19922956")
+	if err != nil {
+		t.Error(err)
+	}
+
+	for _, page := range pages {
 		if page.CID != cids[page.Page-1] {
 			t.Error("CID not match! Expected " + strconv.Itoa(cids[page.Page-1]) + ", but got " + strconv.Itoa(page.CID) + ".")
 		}
