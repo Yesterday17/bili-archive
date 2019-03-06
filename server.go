@@ -237,11 +237,10 @@ func CreateBiliArchiveServer() {
 		ws, err := upgrader.Upgrade(w, req, nil)
 		if err != nil {
 			log.Println(err)
-			result := map[string]interface{}{
+			if err := ws.WriteJSON(&map[string]interface{}{
 				"status": "error",
 				"data":   err,
-			}
-			if err := ws.WriteJSON(&result); err != nil {
+			}); err != nil {
 				log.Println(err)
 			}
 			return
@@ -251,11 +250,10 @@ func CreateBiliArchiveServer() {
 		data := bilibili.DownloadVideoRequest{}
 		if err := ws.ReadJSON(&data); err != nil {
 			log.Println(err)
-			result := map[string]interface{}{
+			if err := ws.WriteJSON(&map[string]interface{}{
 				"status": "error",
 				"data":   err,
-			}
-			if err := ws.WriteJSON(&result); err != nil {
+			}); err != nil {
 				log.Println(err)
 			}
 			return
@@ -263,11 +261,10 @@ func CreateBiliArchiveServer() {
 
 		if err := os.MkdirAll("./video/"+data.FavTitle, os.ModePerm); err != nil {
 			log.Println(err)
-			result := map[string]interface{}{
+			if err := ws.WriteJSON(&map[string]interface{}{
 				"status": "error",
 				"data":   err,
-			}
-			if err := ws.WriteJSON(&result); err != nil {
+			}); err != nil {
 				log.Println(err)
 			}
 			return
@@ -293,11 +290,10 @@ func CreateBiliArchiveServer() {
 				// 下载视频
 				if err = bilibili.DownloadVideo(item, data, outputPath, configuration.Cookies, nil); err != nil {
 					log.Println(err)
-					result := map[string]interface{}{
+					if err := ws.WriteJSON(&map[string]interface{}{
 						"status": "error",
 						"data":   err,
-					}
-					if err := ws.WriteJSON(&result); err != nil {
+					}); err != nil {
 						log.Println(err)
 					}
 				}

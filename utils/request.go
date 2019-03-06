@@ -29,7 +29,7 @@ func Request(method, url, cookies string, reqBody io.Reader, header map[string]s
 	req.Header.Set("Cookie", cookies)
 
 	if header != nil {
-		for i, item := range header {
+		for _, item := range header {
 			req.Header.Set(item, item)
 		}
 	}

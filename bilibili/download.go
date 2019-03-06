@@ -1,3 +1,4 @@
+// Edited from annie
 package bilibili
 
 import (
@@ -5,6 +6,7 @@ import (
 	"github.com/Yesterday17/bili-archive/utils"
 	"io"
 	"os"
+	"sort"
 	"time"
 )
 
@@ -41,6 +43,30 @@ type VideoData struct {
 	Err error `json:"-"`
 	// VideoURL is used to record the address of this download
 	URL string `json:"url"`
+}
+
+func (data *VideoStream) calculateTotalSize() {
+	var size int64
+	for _, urlData := range data.URLs {
+		size += urlData.Size
+	}
+	data.Size = size
+}
+
+func (v *VideoData) genSortedStreams() {
+	for k, data := range v.Streams {
+		if data.Size == 0 {
+			data.calculateTotalSize()
+		}
+		data.name = k
+		v.Streams[k] = data
+		v.sortedStreams = append(v.sortedStreams, data)
+	}
+	if len(v.Streams) > 1 {
+		sort.Slice(
+			v.sortedStreams, func(i, j int) bool { return v.sortedStreams[i].Size > v.sortedStreams[j].Size },
+		)
+	}
 }
 
 func EmptyVideoData(url string, err error) VideoData {
