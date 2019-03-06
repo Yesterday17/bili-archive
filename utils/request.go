@@ -11,7 +11,7 @@ import (
 
 const referer = "https://www.bilibili.com"
 
-func Request(method, url, cookies string, reqBody io.Reader) (*http.Response, error) {
+func Request(method, url, cookies string, reqBody io.Reader, header map[string]string) (*http.Response, error) {
 	transport := &http.Transport{
 		DisableCompression:  true,
 		TLSHandshakeTimeout: 10 * time.Second,
@@ -28,11 +28,17 @@ func Request(method, url, cookies string, reqBody io.Reader) (*http.Response, er
 	req.Header.Set("Referer", referer)
 	req.Header.Set("Cookie", cookies)
 
+	if header != nil {
+		for i, item := range header {
+			req.Header.Set(item, item)
+		}
+	}
+
 	return client.Do(req)
 }
 
 func Get(url, cookies string, reqBody io.Reader) (string, error) {
-	res, err := Request("GET", url, cookies, reqBody)
+	res, err := Request("GET", url, cookies, reqBody, nil)
 	if err != nil {
 		return "", err
 	}

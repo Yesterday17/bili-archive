@@ -1,10 +1,8 @@
 package bilibili
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/Yesterday17/bili-archive/utils"
-	"github.com/iawia002/annie/downloader"
 	"strconv"
 )
 
@@ -66,12 +64,12 @@ func genAPI(aid, cid, quality, cookies string) (string, error) {
 	return api, nil
 }
 
-func genURL(durl []dURLData) ([]downloader.URL, int64) {
+func genURL(durl []dURLData) ([]VideoURL, int64) {
 	var size int64
-	urls := make([]downloader.URL, len(durl))
+	urls := make([]VideoURL, len(durl))
 	for index, data := range durl {
 		size += data.Size
-		urls[index] = downloader.URL{
+		urls[index] = VideoURL{
 			URL:  data.URL,
 			Size: data.Size,
 			Ext:  "flv",
@@ -81,7 +79,7 @@ func genURL(durl []dURLData) ([]downloader.URL, int64) {
 }
 
 // 提取 bilibili 视频
-func ExtractVideo(data DownloadVideoRequest, cookies string) downloader.Data {
+func ExtractVideo(data DownloadVideoRequest, cookies string) VideoData {
 	url := "https://www.bilibili.com/video/av" + data.Aid + "/?p=" + strconv.Itoa(data.Page.Page)
 
 	// Get "accept_quality" and "accept_description"
@@ -89,49 +87,39 @@ func ExtractVideo(data DownloadVideoRequest, cookies string) downloader.Data {
 	// "accept_quality":[80,48,32,16],
 	api, err := genAPI(data.Aid, data.Page.CID, "15", cookies)
 	if err != nil {
-		return downloader.EmptyData(url, err)
-	}
-	jsonString, err := utils.Get(api, cookies, nil)
-	if err != nil {
-		return downloader.EmptyData(url, err)
+		return EmptyVideoData(url, err)
 	}
 
 	var quality qualityInfo
-	err = json.Unmarshal([]byte(jsonString), &quality)
-	if err != nil {
-		return downloader.EmptyData(url, err)
+	if utils.GetJson(api, cookies, &quality) != nil {
+		return EmptyVideoData(url, err)
 	}
 
-	streams := make(map[string]downloader.Stream, len(quality.Quality))
+	streams := make(map[string]VideoStream, len(quality.Quality))
 	for _, q := range quality.Quality {
 		apiURL, err := genAPI(data.Aid, data.Page.CID, strconv.Itoa(q), cookies)
 		if err != nil {
-			return downloader.EmptyData(url, err)
-		}
-		jsonString, err := utils.Get(apiURL, cookies, nil)
-		if err != nil {
-			return downloader.EmptyData(url, err)
+			return EmptyVideoData(url, err)
 		}
 		var data bilibiliData
-		err = json.Unmarshal([]byte(jsonString), &data)
-		if err != nil {
-			return downloader.EmptyData(url, err)
+		if utils.GetJson(apiURL, cookies, &data) != nil {
+			return EmptyVideoData(url, err)
 		}
 
-		// Avoid duplicate streams
+		// 避免流重复
 		if _, ok := streams[strconv.Itoa(data.Quality)]; ok {
 			continue
 		}
 
 		urls, size := genURL(data.DURL)
-		streams[strconv.Itoa(data.Quality)] = downloader.Stream{
+		streams[strconv.Itoa(data.Quality)] = VideoStream{
 			URLs:    urls,
 			Size:    size,
 			Quality: qualityString[data.Quality],
 		}
 	}
 
-	return downloader.Data{
+	return VideoData{
 		Site:    "哔哩哔哩 bilibili.com",
 		Title:   data.Title,
 		Type:    "video",

@@ -273,32 +273,33 @@ func CreateBiliArchiveServer() {
 			return
 		}
 
-		config.OutputPath = "./video/" + string(data.FavTitle)
-		config.OutputName = data.Title + " - " + data.Page.PageName
+		outputPath := "./video/" + string(data.FavTitle)
 
 		if _, err := os.Stat(config.OutputPath + "/" + config.OutputName + ".flv"); os.IsNotExist(err) {
-			url := "https://www.bilibili.com/video/av" + data.Aid + "/?p=" + strconv.Itoa(data.Page.Page)
-
-			item := bilibili.ExtractVideo(data, configuration.Cookies)
-			if item.Err != nil {
-				log.Println(err)
-				result := map[string]interface{}{
-					"status": "error",
-					"data":   item.Err,
-				}
-				if err := ws.WriteJSON(&result); err != nil {
+			if _, err := os.Stat(config.OutputPath + "/" + config.OutputName + ".mp4"); os.IsNotExist(err) {
+				// 获得视频链接
+				item := bilibili.ExtractVideo(data, configuration.Cookies)
+				if item.Err != nil {
 					log.Println(err)
+					result := map[string]interface{}{
+						"status": "error",
+						"data":   item.Err,
+					}
+					if err := ws.WriteJSON(&result); err != nil {
+						log.Println(err)
+					}
 				}
-			}
 
-			if err = downloader.Download(item, url, 5); err != nil {
-				log.Println(err)
-				result := map[string]interface{}{
-					"status": "error",
-					"data":   err,
-				}
-				if err := ws.WriteJSON(&result); err != nil {
+				// 下载视频
+				if err = bilibili.DownloadVideo(item, data, outputPath, configuration.Cookies, nil); err != nil {
 					log.Println(err)
+					result := map[string]interface{}{
+						"status": "error",
+						"data":   err,
+					}
+					if err := ws.WriteJSON(&result); err != nil {
+						log.Println(err)
+					}
 				}
 			}
 		}
