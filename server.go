@@ -12,6 +12,7 @@ import (
 	"github.com/iawia002/annie/downloader"
 	bilibili_annie "github.com/iawia002/annie/extractors/bilibili"
 	"github.com/rakyll/statik/fs"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -234,6 +235,37 @@ func CreateBiliArchiveServer() {
 	}
 	handler.HandleFunc("/api/pages", videoPages)
 
+	// Path: /api/pic
+	// Method: GET
+	// Params: @url string
+	// Description: 获取图片
+	// Response: image/jpeg
+	getPicture := func(w http.ResponseWriter, req *http.Request) {
+		url := req.URL.Query().Get("url")
+		res, err := utils.Request("GET", url, configuration.Cookies, nil, nil)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		if res.Body != nil {
+			defer res.Body.Close()
+		}
+
+		data, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		// Base64
+		//str := base64.StdEncoding.EncodeToString(data)
+		//w.Write([]byte("data:image/jpg;base64," + str))
+
+		w.Header().Set("Content-Type", "image/jpeg")
+		w.Write(data)
+	}
+	handler.HandleFunc("/api/pic", getPicture)
+
 	// Path: /download
 	// Method: WebSocket
 	// Send: @aid  string
@@ -321,6 +353,10 @@ func CreateBiliArchiveServer() {
 	}
 	handler.HandleFunc("/download", downloadVideo)
 
+	// Path: /api/test
+	// Method: GET
+	// Description: 测试网络与系统
+	// Response: 测试结果
 	testSericeHandler := func(w http.ResponseWriter, req *http.Request) {
 		output, _ := json.Marshal(map[string]bool{
 			"main":               bilibili.TestMainSite(),
