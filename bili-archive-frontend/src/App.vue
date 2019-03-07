@@ -66,7 +66,13 @@
         </keep-alive>
       </md-step>
     </md-steppers>
-    <md-button id="step-next" class="md-fab md-primary" @click="next" :disabled="!this.canGoNext">
+    <md-button
+      id="step-next"
+      class="md-fab md-primary"
+      @click="next"
+      :disabled="!this.canGoNext"
+      v-if="this.display !== 4"
+    >
       <md-icon>navigate_next</md-icon>
     </md-button>
   </div>
