@@ -17,9 +17,9 @@
       <md-step
         id="step-01"
         class="center"
-        md-label="登录"
-        md-description="扫描二维码"
-        :md-editable="false"
+        md-label="检查"
+        md-description="环境测试"
+        :md-editable="true"
         :md-done="this.step > 1"
         :to="'/step-01'"
       >
@@ -30,8 +30,8 @@
       <md-step
         id="step-02"
         class="center"
-        md-label="选择收藏夹"
-        md-description="需要存档的视频列表"
+        md-label="登录"
+        md-description="扫描二维码"
         :md-editable="false"
         :md-done="this.step > 2"
         :to="'/step-02'"
@@ -43,13 +43,26 @@
       <md-step
         id="step-03"
         class="center"
-        md-label="下载"
-        md-description="存档视频"
+        md-label="选择收藏夹"
+        md-description="需要存档的视频列表"
         :md-editable="false"
+        :md-done="this.step > 3"
         :to="'/step-03'"
       >
         <keep-alive>
           <router-view v-if="this.display === 3"/>
+        </keep-alive>
+      </md-step>
+      <md-step
+        id="step-04"
+        class="center"
+        md-label="下载"
+        md-description="存档视频"
+        :md-editable="false"
+        :to="'/step-04'"
+      >
+        <keep-alive>
+          <router-view v-if="this.display === 4"/>
         </keep-alive>
       </md-step>
     </md-steppers>

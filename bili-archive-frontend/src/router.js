@@ -2,6 +2,7 @@ import Vue from "vue";
 import Router from "vue-router";
 
 import Welcome from "./views/Welcome.vue";
+import Environment from "./views/Environment.vue";
 import Login from "./views/Login.vue";
 import SelectFavorite from "./views/SelectFavorite.vue";
 import Download from "./views/Download.vue";
@@ -21,7 +22,7 @@ export default new Router({
     {
       path: "/step-01",
       name: "step-01",
-      component: Login,
+        component: Environment,
       meta: {
         keepAlive: true
       }
@@ -29,7 +30,7 @@ export default new Router({
     {
       path: "/step-02",
       name: "step-02",
-      component: SelectFavorite,
+        component: Login,
       meta: {
         keepAlive: true
       }
@@ -37,10 +38,18 @@ export default new Router({
     {
       path: "/step-03",
       name: "step-03",
-      component: Download,
-      meta: {
-        keepAlive: false
+        component: SelectFavorite,
+        meta: {
+            keepAlive: true
+        }
+    },
+      {
+          path: "/step-04",
+          name: "step-04",
+          component: Download,
+          meta: {
+              keepAlive: false
+          }
       }
-    }
   ]
 });
