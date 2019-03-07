@@ -216,6 +216,24 @@ func CreateBiliArchiveServer() {
 	}
 	handler.HandleFunc("/api/fav", favDetail)
 
+	// Path: /api/pages
+	// Method: GET
+	// Params: @aid string
+	// Description: 视频分P详情
+	// Response: @ok boolean
+	// 			 @data []VideoPage
+	videoPages := func(w http.ResponseWriter, req *http.Request) {
+		aid := req.URL.Query().Get("aid")
+		pages, err := bilibili.GetVideoPages(aid)
+		output, _ := json.Marshal(map[string]interface{}{
+			"ok":   err != nil,
+			"data": pages,
+		})
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(output)
+	}
+	handler.HandleFunc("/api/pages", videoPages)
+
 	// Path: /download
 	// Method: WebSocket
 	// Send: @aid  string
