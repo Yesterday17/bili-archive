@@ -321,8 +321,24 @@ func CreateBiliArchiveServer() {
 	}
 	handler.HandleFunc("/download", downloadVideo)
 
+	testSericeHandler := func(w http.ResponseWriter, req *http.Request) {
+		output, _ := json.Marshal(map[string]bool{
+			"main":               bilibili.TestMainSite(),
+			"login_qr":           bilibili.TestLoginQR(),
+			"login_info":         bilibili.TestLoginInfo(),
+			"space":              bilibili.TestSpace(),
+			"video_page":         bilibili.TestVideoPage(),
+			"favorite_list":      bilibili.TestFavoriteList(),
+			"favorite_list_item": bilibili.TestFavoriteListItem(),
+		})
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(output)
+	}
+	handler.HandleFunc("/api/test", testSericeHandler)
+
 	// Download, transfer data with Websocket
 	// Deprecated
+	// But still used in frontend currently
 	iterateFavHandler := func(w http.ResponseWriter, req *http.Request) {
 		upgrader := websocket.Upgrader{
 			ReadBufferSize:  1024,
