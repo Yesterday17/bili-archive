@@ -112,6 +112,9 @@ export default {
   watch: {
     $route() {
       const path = this.$route.path;
+      this.step = localStorage.getItem("step")
+        ? parseInt(localStorage.getItem("step"))
+        : 0;
       this.display = parseInt(path.substr(path.length - 2, 2));
       this.goNextFlag = this.$route.query.next ? this.$route.query.next : false;
     }
