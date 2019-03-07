@@ -147,16 +147,22 @@ export default {
 }
 
 #app,
+.md-stepper,
+.md-stepper-content,
 .md-steppers,
-.md-stepper {
+.md-steppers-container,
+.full-height {
   height: 100%;
+  width: 100%;
 }
 
 .md-steppers-wrapper {
   height: 90% !important;
+  width: 100%;
 }
 
-.center {
+.center,
+.md-stepper-content {
   display: flex;
   display: -webkit-flex;
   align-items: center;

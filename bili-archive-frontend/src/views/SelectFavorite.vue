@@ -158,7 +158,6 @@ export default {
 
 <style lang="scss" scoped>
 #select {
-  margin-top: 100px;
-  margin-bottom: 100px;
+  width: 100%;
 }
 </style>

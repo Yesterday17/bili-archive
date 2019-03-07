@@ -122,7 +122,6 @@ export default {
 
 <style lang="scss" scoped>
 #environment {
-  margin-top: 100px;
-  width: 768px;
+  width: 100%;
 }
 </style>
