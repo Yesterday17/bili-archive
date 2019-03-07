@@ -76,13 +76,13 @@ func EmptyVideoData(url string, err error) VideoData {
 	}
 }
 
-func writeFile(url, cookies string, header map[string]string, file *os.File) (int64, error) {
+func writeFile(url, cookies string, header map[string]string, file *os.File, pg *utils.Progress) (int64, error) {
 	res, err := utils.Request("GET", url, cookies, nil, header)
 	if err != nil {
 		return 0, err
 	}
 	defer res.Body.Close()
-	writer := io.MultiWriter(file)
+	writer := io.MultiWriter(file, pg)
 	// Note that io.Copy reads 32kb(maximum) from input and writes them to output, then repeats.
 	// So don't worry about memory.
 	written, copyErr := io.Copy(writer, res.Body)
@@ -92,23 +92,28 @@ func writeFile(url, cookies string, header map[string]string, file *os.File) (in
 	return written, nil
 }
 
-func SaveFile(urlData VideoURL, fileName, filePath, cookies string, callback func(status string)) error {
+func SaveFile(urlData VideoURL, fileName, filePath, cookies string, pg *utils.Progress, callback func(pg *utils.Progress)) error {
 	filePath, err := utils.FilePath(filePath, fileName, urlData.Ext, false)
 	if err != nil {
 		return err
 	}
 	fileSize, exists, err := utils.FileSize(fileName)
 	if err != nil {
+		pg.Error(err)
+		pg.Finish()
 		return err
 	}
 	if exists && fileSize == urlData.Size {
 		// 跳过重复文件
+		pg.Finish()
 		return nil
 	}
 
 	tempFilePath := filePath + ".download"
 	tempFileSize, _, err := utils.FileSize(tempFilePath)
 	if err != nil {
+		pg.Error(err)
+		pg.Finish()
 		return err
 	}
 	headers := map[string]string{}
@@ -118,12 +123,15 @@ func SaveFile(urlData VideoURL, fileName, filePath, cookies string, callback fun
 	)
 	if tempFileSize > 0 {
 		// range start from 0, 0-1023 means the first 1024 bytes of the file
+		pg.Add(tempFileSize)
 		headers["Range"] = fmt.Sprintf("bytes=%d-", tempFileSize)
 		file, fileError = os.OpenFile(tempFilePath, os.O_APPEND|os.O_WRONLY, 0644)
 	} else {
 		file, fileError = os.Create(tempFilePath)
 	}
 	if fileError != nil {
+		pg.Error(fileError)
+		pg.Finish()
 		return fileError
 	}
 	var start, end, chunkSize int64
@@ -143,11 +151,12 @@ func SaveFile(urlData VideoURL, fileName, filePath, cookies string, callback fun
 		headers["Range"] = fmt.Sprintf("bytes=%d-%d", start, end)
 		temp := start
 		for i := 0; ; i++ {
-			written, err := writeFile(urlData.URL, cookies, headers, file)
+			written, err := writeFile(urlData.URL, cookies, headers, file, pg)
 			if err == nil {
 				break
 			} else if i+1 >= 10 {
 				// 10 为重试次数
+				pg.Error(err)
 				return err
 			}
 			temp += written
@@ -169,7 +178,7 @@ func SaveFile(urlData VideoURL, fileName, filePath, cookies string, callback fun
 	return nil
 }
 
-func DownloadVideo(v VideoData, vData DownloadVideoRequest, basePath, cookies string, callback func(status string)) error {
+func DownloadVideo(v VideoData, vData DownloadVideoRequest, basePath, cookies string, callback func(pg *utils.Progress)) error {
 	var err error
 	v.genSortedStreams()
 	stream := v.sortedStreams[0].name
@@ -197,6 +206,7 @@ func DownloadVideo(v VideoData, vData DownloadVideoRequest, basePath, cookies st
 		return nil
 	}
 	// 单线程下载
+	bar := utils.NewProgress(title, data.Size, callback)
 	parts := make([]string, len(data.URLs))
 	for index, url := range data.URLs {
 		var fileName, partFilePath string
@@ -210,7 +220,7 @@ func DownloadVideo(v VideoData, vData DownloadVideoRequest, basePath, cookies st
 			}
 			parts[index] = partFilePath
 		}
-		err := SaveFile(url, fileName, basePath, cookies, callback)
+		err := SaveFile(url, fileName, basePath, cookies, bar, callback)
 		if err != nil {
 			return err
 		}

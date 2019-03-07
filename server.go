@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/Yesterday17/bili-archive/bilibili"
 	_ "github.com/Yesterday17/bili-archive/statik"
+	"github.com/Yesterday17/bili-archive/utils"
 	"github.com/gorilla/websocket"
 	"github.com/iawia002/annie/config"
 	"github.com/iawia002/annie/downloader"
@@ -283,8 +284,12 @@ func CreateBiliArchiveServer() {
 					return
 				}
 
+				callback := func(pg *utils.Progress) {
+					ws.WriteJSON(pg)
+				}
+
 				// 下载视频
-				if err = bilibili.DownloadVideo(item, data, outputPath, configuration.Cookies, nil); err != nil {
+				if err = bilibili.DownloadVideo(item, data, outputPath, configuration.Cookies, callback); err != nil {
 					log.Println(err)
 					if err := ws.WriteJSON(&map[string]interface{}{
 						"status": "error",
