@@ -43,12 +43,24 @@ export default {
   },
   methods: {
     getQRCode() {
-      fetch(`//${window.location.host}/api/login-qr`)
+      fetch(
+        `//${
+          window.port
+            ? window.location.hostname + ":" + window.port
+            : window.location.host
+        }/api/login-qr`
+      )
         .then(data => data.json())
         .then(json => (this.qrCode = json.image))
         .then(() => {
           this.iStatus = setInterval(() => {
-            fetch(`//${window.location.host}/api/login-status`)
+            fetch(
+              `//${
+                window.port
+                  ? window.location.hostname + ":" + window.port
+                  : window.location.host
+              }/api/login-status`
+            )
               .then(data => data.json())
               .then(json => {
                 if (json.ok) {

@@ -84,7 +84,13 @@ export default {
       this.avatar = "";
     },
     getUserData() {
-      return fetch(`//${window.location.host}/api/info?uid=${this.uid}`)
+      return fetch(
+        `//${
+          window.port
+            ? window.location.hostname + ":" + window.port
+            : window.location.host
+        }/api/info?uid=${this.uid}`
+      )
         .then(data => data.json())
         .then(json => {
           if (!json.ok || json.data.mid === 0) {
@@ -102,7 +108,13 @@ export default {
       this.showStatus = false;
 
       if (this.currentUser) {
-        fetch(`//${window.location.host}/api/current-user`)
+        fetch(
+          `//${
+            window.port
+              ? window.location.hostname + ":" + window.port
+              : window.location.host
+          }/api/current-user`
+        )
           .then(data => data.json())
           .then(json => {
             if (!json.ok) {

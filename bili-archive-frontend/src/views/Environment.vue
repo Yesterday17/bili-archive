@@ -83,7 +83,13 @@ export default {
     }
   },
   mounted() {
-    fetch(`//${window.location.host}/api/test`)
+    fetch(
+      `//${
+        window.port
+          ? window.location.hostname + ":" + window.port
+          : window.location.host
+      }/api/test`
+    )
       .then(data => data.json())
       .then(json => {
         this.pending = false;

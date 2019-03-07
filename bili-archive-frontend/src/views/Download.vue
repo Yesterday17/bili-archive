@@ -43,7 +43,13 @@ export default {
       this.$router.push("step-00");
     } else {
       this.uid = parseInt(localStorage.getItem("uid"));
-      const ws = new WebSocket(`ws://${window.location.host}/ws`);
+      const ws = new WebSocket(
+        `ws://${
+          window.port
+            ? window.location.hostname + ":" + window.port
+            : window.location.host
+        }/ws`
+      );
 
       ws.addEventListener("message", event => {
         this.status = event.data;
