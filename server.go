@@ -227,7 +227,7 @@ func CreateBiliArchiveServer() {
 		aid := req.URL.Query().Get("aid")
 		pages, err := bilibili.GetVideoPages(aid)
 		output, _ := json.Marshal(map[string]interface{}{
-			"ok":   err != nil,
+			"ok":   err == nil,
 			"data": pages,
 		})
 		w.Header().Set("Content-Type", "application/json")
