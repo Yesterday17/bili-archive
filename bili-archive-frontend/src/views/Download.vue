@@ -7,7 +7,7 @@
       </md-card-header>
       <md-card-content>
         <p>目前正在下载：</p>
-        <p>{{this.status}}</p>
+        <p>{{this.downloadTitle}}</p>
       </md-card-content>
 
       <md-card-expand>
@@ -19,15 +19,21 @@
 
         <md-card-expand-content>
           <md-card-content>
-            <md-progress-bar md-mode="indeterminate"></md-progress-bar>
+            <md-progress-bar
+              md-mode="determinate"
+              :md-value="this.downloadNow / this.downloadTotal * 100"
+            ></md-progress-bar>
           </md-card-content>
         </md-card-expand-content>
       </md-card-expand>
     </md-card>
-    <div v-else class="page-container full-height">
+    <div v-else class="page-container full-height" id="select">
       <md-app class="full-height" md-waterfall md-mode="fixed">
-        <md-app-toolbar class="md-primary">
+        <md-app-toolbar class="md-primary" id="app-toolbar">
           <span class="md-title">收藏</span>
+          <md-button class="md-icon-button" @click="startDownload">
+            <md-icon>check</md-icon>
+          </md-button>
         </md-app-toolbar>
 
         <md-app-drawer md-permanent="full">
@@ -84,15 +90,25 @@
 </template>
 
 <script>
+import WSP from "websocket-as-promised";
+
 export default {
   name: "Download",
   data() {
     return {
       uid: 0,
+
       start: false,
-      status: "",
+      downloadTitle: "",
+      downloadStatus: 0,
+      downloadMessage: "",
+      downloadNow: 0,
+      downloadTotal: Infinity,
 
       favlist: [],
+      favlistDetail: new Map(),
+      videoToFav: new Map(),
+      videoDetail: new Map(),
       favorite: new Map(),
       downloadCheck: [],
       currentView: -1
@@ -112,6 +128,7 @@ export default {
           this.favlist.splice(0, this.favlist.length);
           Array.prototype.push.apply(this.favlist, json.data);
           this.favlist.forEach(fav => {
+            this.favlistDetail.set(fav.fid, fav);
             this.favorite.set(fav.fid, []);
           });
         });
@@ -127,6 +144,19 @@ export default {
         .then(data => data.json())
         .then(json => {
           Array.prototype.push.apply(this.favorite.get(fid), json.data);
+        });
+    },
+    getVideoPages(aid) {
+      return fetch(
+        `//${
+          window.port
+            ? window.location.hostname + ":" + window.port
+            : window.location.host
+        }/api/pages?aid=${aid}`
+      )
+        .then(data => data.json())
+        .then(json => {
+          return json.ok ? json.data : [];
         });
     },
     getPicture(src) {
@@ -147,10 +177,76 @@ export default {
               "http://i0.hdslb.com/bfs/archive/be27fd62c99036dce67efface486fb0a88ffed06.jpg"
             ) {
               this.downloadCheck.push(fav.aid);
+              if (this.videoToFav.has(fav.aid)) {
+                this.videoToFav.get(fav.aid).push(key);
+              } else {
+                this.videoToFav.set(fav.aid, [key]);
+              }
+
+              if (!this.videoDetail.has(fav.aid)) {
+                this.videoDetail.set(fav.aid, fav);
+              }
             }
           });
         });
       }
+    },
+    downloadVideo(queue, index) {
+      if (index === queue.length) return;
+
+      const wsp = new WSP(
+        `ws://${
+          window.port
+            ? window.location.hostname + ":" + window.port
+            : window.location.host
+        }/download`,
+        {
+          packMessage: data => JSON.stringify(data),
+          unpackMessage: message => JSON.parse(message)
+        }
+      );
+
+      wsp.onUnpackedMessage.addListener(data => {
+        this.downloadTitle = data.title;
+        this.downloadStatus = data.status;
+        this.downloadMessage = data.message;
+        this.downloadNow = data.data.progress;
+        this.downloadTotal = data.data.size;
+      });
+
+      wsp.onClose.addListener(() => {
+        console.log(queue[index].title + " 下载完成！");
+        this.downloadVideo(queue, index + 1);
+      });
+      wsp.open().then(() => wsp.sendPacked(queue[index]));
+    },
+    async startDownload() {
+      this.start = true;
+      const downloadQueue = [];
+
+      for (let aid of this.downloadCheck) {
+        const videos = [];
+        const favList = this.videoToFav.get(aid);
+        const pages = await this.getVideoPages(aid);
+
+        pages.forEach(page => {
+          const data = {
+            // 只在 list 的第一个收藏夹中下载 避免重复
+            title: this.videoDetail.get(aid).title,
+            fav_title: this.favlistDetail.get(favList[0]).name,
+            aid: aid.toString(),
+            page: {
+              page: page.page,
+              page_name: page.pagename,
+              cid: page.cid.toString()
+            }
+          };
+          videos.push(data);
+        });
+        // 确保同一视频的多分P连续
+        Array.prototype.push.apply(downloadQueue, videos);
+      }
+      this.downloadVideo(downloadQueue, 0);
     }
   },
   mounted() {
@@ -167,22 +263,6 @@ export default {
           }
         });
       });
-      //   const ws = new WebSocket(
-      //     `ws://${
-      //       window.port
-      //         ? window.location.hostname + ":" + window.port
-      //         : window.location.host
-      //     }/ws`
-      //   );
-      //   ws.addEventListener("message", event => {
-      //     this.status = event.data;
-      //   });
-      //   ws.addEventListener("open", () => {
-      //     ws.send(this.uid);
-      //   });
-      //   ws.addEventListener("close", () => {
-      //     //
-      //   });
     }
   }
 };
@@ -193,22 +273,29 @@ export default {
   width: 100%;
 }
 
-.md-button {
-  text-transform: initial;
-}
+#select {
+  #app-toolbar {
+    flex-direction: row;
+    justify-content: space-between;
+  }
 
-.video-card {
-  display: inline-block;
-  width: 250px;
-  margin: 10px;
+  .md-button {
+    text-transform: initial;
+  }
 
-  .videocheck {
-    position: absolute;
-    padding: 0px;
-    margin: 0px;
-    top: 10px;
-    left: 10px;
-    background: white;
+  .video-card {
+    display: inline-block;
+    width: 250px;
+    margin: 10px;
+
+    .videocheck {
+      position: absolute;
+      padding: 0px;
+      margin: 0px;
+      top: 10px;
+      left: 10px;
+      background: white;
+    }
   }
 }
 
