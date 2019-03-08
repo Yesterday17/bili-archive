@@ -1887,6 +1887,11 @@ check-types@^7.3.0:
   resolved "http://registry.npm.taobao.org/check-types/download/check-types-7.4.0.tgz#0378ec1b9616ec71f774931a3c6516fad8c152f4"
   integrity sha1-A3jsG5YW7HH3dJMaPGUW+tjBUvQ=
 
+chnl@^0.4.1:
+  version "0.4.2"
+  resolved "http://registry.npm.taobao.org/chnl/download/chnl-0.4.2.tgz#ff6fc529ae90dfa63f740343021d9871b5914bdf"
+  integrity sha1-/2/FKa6Q36Y/dANDAh2YcbWRS98=
+
 chokidar@^2.0.0, chokidar@^2.0.2:
   version "2.1.2"
   resolved "http://registry.npm.taobao.org/chokidar/download/chokidar-2.1.2.tgz#9c23ea40b01638439e0513864d362aeacc5ad058"
@@ -2912,7 +2917,7 @@ error-stack-parser@^2.0.0:
   dependencies:
     stackframe "^1.0.4"
 
-es-abstract@^1.12.0, es-abstract@^1.4.3, es-abstract@^1.5.1:
+es-abstract@^1.12.0, es-abstract@^1.4.3, es-abstract@^1.5.1, es-abstract@^1.9.0:
   version "1.13.0"
   resolved "http://registry.npm.taobao.org/es-abstract/download/es-abstract-1.13.0.tgz#ac86145fdd5099d8dd49558ccba2eaf9b88e24e9"
   integrity sha1-rIYUX91QmdjdSVWMy6Lq+biOJOk=
@@ -3515,6 +3520,11 @@ flat-cache@^2.0.1:
     flatted "^2.0.0"
     rimraf "2.6.3"
     write "1.0.3"
+
+flat-options@^0.1.3:
+  version "0.1.3"
+  resolved "http://registry.npm.taobao.org/flat-options/download/flat-options-0.1.3.tgz#56f644aaa095e5f984ecdd329f119e8a196c8aa3"
+  integrity sha1-VvZEqqCV5fmE7N0ynxGeihlsiqM=
 
 flatted@^2.0.0:
   version "2.0.0"
@@ -6357,10 +6367,24 @@ progress@^2.0.0:
   resolved "http://registry.npm.taobao.org/progress/download/progress-2.0.3.tgz#7e8cf8d8f5b8f239c1bc68beb4eb78567d572ef8"
   integrity sha1-foz42PW48jnBvGi+tOt4Vn1XLvg=
 
+promise-controller@^0.3.0:
+  version "0.3.0"
+  resolved "http://registry.npm.taobao.org/promise-controller/download/promise-controller-0.3.0.tgz#e512a5059075a0c2dedd1488695412f0650c33f7"
+  integrity sha1-5RKlBZB1oMLe3RSIaVQS8GUMM/c=
+
 promise-inflight@^1.0.1:
   version "1.0.1"
   resolved "http://registry.npm.taobao.org/promise-inflight/download/promise-inflight-1.0.1.tgz#98472870bf228132fcbdd868129bad12c3c029e3"
   integrity sha1-mEcocL8igTL8vdhoEputEsPAKeM=
+
+promise.prototype.finally@^3.1.0:
+  version "3.1.0"
+  resolved "http://registry.npm.taobao.org/promise.prototype.finally/download/promise.prototype.finally-3.1.0.tgz#66f161b1643636e50e7cf201dc1b84a857f3864e"
+  integrity sha1-ZvFhsWQ2NuUOfPIB3BuEqFfzhk4=
+  dependencies:
+    define-properties "^1.1.2"
+    es-abstract "^1.9.0"
+    function-bind "^1.1.1"
 
 proxy-addr@~2.0.4:
   version "2.0.4"
@@ -8231,6 +8255,16 @@ webpack-sources@^1.1.0, webpack-sources@^1.3.0:
     terser-webpack-plugin "^1.1.0"
     watchpack "^1.5.0"
     webpack-sources "^1.3.0"
+
+websocket-as-promised@^0.9.0:
+  version "0.9.0"
+  resolved "http://registry.npm.taobao.org/websocket-as-promised/download/websocket-as-promised-0.9.0.tgz#be072a88094383f169f82d14cd4c022104fa1567"
+  integrity sha1-vgcqiAlDg/Fp+C0UzUwCIQT6FWc=
+  dependencies:
+    chnl "^0.4.1"
+    flat-options "^0.1.3"
+    promise-controller "^0.3.0"
+    promise.prototype.finally "^3.1.0"
 
 websocket-driver@>=0.5.1:
   version "0.7.0"
