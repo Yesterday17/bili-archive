@@ -9,14 +9,11 @@ import (
 	"github.com/Yesterday17/bili-archive/utils"
 	"github.com/gorilla/websocket"
 	"github.com/iawia002/annie/config"
-	"github.com/iawia002/annie/downloader"
-	bilibili_annie "github.com/iawia002/annie/extractors/bilibili"
 	"github.com/rakyll/statik/fs"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 )
 
 func CreateBiliArchiveServer() {
@@ -374,80 +371,6 @@ func CreateBiliArchiveServer() {
 		w.Write(output)
 	}
 	handler.HandleFunc("/api/test", testSericeHandler)
-
-	// Download, transfer data with Websocket
-	// Deprecated
-	// But still used in frontend currently
-	iterateFavHandler := func(w http.ResponseWriter, req *http.Request) {
-		upgrader := websocket.Upgrader{
-			ReadBufferSize:  1024,
-			WriteBufferSize: 1024,
-		}
-
-		ws, err := upgrader.Upgrade(w, req, nil)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		defer ws.Close()
-
-		messageType, mid, err := ws.ReadMessage()
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		fav, av, page := "", "", ""
-		videoItem, videoPage := bilibili.FavoriteListItemVideo{}, bilibili.VideoPage{}
-		bilibili.IterateFavoriteList(string(mid), configuration.Cookies, func(key, value string, data interface{}) {
-			switch key {
-			case "Favorite":
-				fav = value
-			case "Video":
-				videoItem = data.(bilibili.FavoriteListItemVideo)
-				av = strconv.Itoa(videoItem.AID)
-			case "Page":
-				videoPage = data.(bilibili.VideoPage)
-				page = strconv.Itoa(videoPage.Page)
-			case "Message":
-				page = ""
-			}
-
-			err := ws.WriteMessage(messageType, []byte(key+": "+value))
-			if err != nil {
-				log.Println(err)
-			}
-
-			if av != "" && page != "" {
-				os.MkdirAll("./video/"+fav, os.ModePerm)
-				config.OutputPath = "./video/" + fav
-				config.OutputName = videoItem.Title + " - " + videoPage.PageName
-
-				if _, err := os.Stat(config.OutputPath + "/" + config.OutputName + ".flv"); os.IsNotExist(err) {
-					url := "https://www.bilibili.com/video/av" + av + "/?p=" + page
-
-					v, err := bilibili_annie.Extract(url)
-					if err != nil {
-						log.Println(err)
-					}
-
-					for _, item := range v {
-						if item.Err != nil {
-							log.Println(err)
-							continue
-						}
-						err = downloader.Download(item, url, 5)
-						if err != nil {
-							log.Println(err)
-						}
-					}
-				}
-				page = ""
-			}
-		})
-
-	}
-	handler.HandleFunc("/ws", iterateFavHandler)
 
 	if err := http.ListenAndServe(":"+configuration.Port, handler); err != nil {
 		log.Fatal(err)
