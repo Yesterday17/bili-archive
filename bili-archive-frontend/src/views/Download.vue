@@ -96,22 +96,25 @@ export default {
   name: "Download",
   data() {
     return {
-      uid: 0,
+      uid: 0, // 下载用户的 UID
+      start: false, // 下载是否开始
 
-      start: false,
+      /**
+       * 正在下载视频的信息
+       */
       downloadTitle: "",
       downloadStatus: 0,
       downloadMessage: "",
       downloadNow: 0,
       downloadTotal: Infinity,
 
-      favlist: [],
-      favlistDetail: new Map(),
-      videoToFav: new Map(),
-      videoDetail: new Map(),
-      favorite: new Map(),
-      downloadCheck: [],
-      currentView: -1
+      favlist: [], // 表示收藏内容的数组 v-for 用
+      favlistDetail: new Map(), // fid 到收藏列表信息
+      videoToFav: new Map(), // 视频内容到 fid 的反向 Map
+      videoDetail: new Map(), // 视频 aid 到视频内容的 Map
+      favorite: new Map(), // 收藏内容的详细信息 fid 对应视频数组
+      downloadCheck: [], // 需要下载视频 aid 的数组
+      currentView: -1 // 当前查看的收藏夹视图 id
     };
   },
   methods: {
@@ -125,6 +128,7 @@ export default {
       )
         .then(data => data.json())
         .then(json => {
+          // TODO: 检测 json.ok
           this.favlist.splice(0, this.favlist.length);
           Array.prototype.push.apply(this.favlist, json.data);
           this.favlist.forEach(fav => {
@@ -143,6 +147,7 @@ export default {
       )
         .then(data => data.json())
         .then(json => {
+          // TODO: 检测 json.ok
           Array.prototype.push.apply(this.favorite.get(fid), json.data);
         });
     },
@@ -170,6 +175,12 @@ export default {
       this.currentView = to;
 
       if (this.downloadCheck.length === 0) {
+        // 当下载链接的数组中不存在内容时
+        // 判定未初始化
+        // 此时初始化 将所有**可用**视频加入列表
+        // 由于 3fd1824562cfafbbb0b3c49bdd9812535680280c
+        // 不会对已失效视频进行任何处理
+        // TODO: 峰回路转 把视频加入稍后再看列表后可以显示失效视频信息
         this.favorite.forEach((value, key) => {
           value.forEach(fav => {
             if (
@@ -194,6 +205,7 @@ export default {
     downloadVideo(queue, index) {
       if (index === queue.length) return;
 
+      // TODO: 使用通常的 WebSocket 减少依赖
       const wsp = new WSP(
         `ws://${
           window.port
@@ -215,6 +227,7 @@ export default {
       });
 
       wsp.onClose.addListener(() => {
+        // TODO: 更详细的日志提示
         console.log(queue[index].title + " 下载完成！");
         this.downloadVideo(queue, index + 1);
       });
@@ -244,6 +257,7 @@ export default {
           videos.push(data);
         });
         // 确保同一视频的多分P连续
+        // FIXME: 这个可能没有必要了
         Array.prototype.push.apply(downloadQueue, videos);
       }
       this.downloadVideo(downloadQueue, 0);
