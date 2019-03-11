@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Yesterday17/bili-archive/utils"
 	"io"
+	"log"
 	"os"
 	"path"
 	"sort"
@@ -179,12 +180,11 @@ func SaveFile(urlData VideoURL, fileName, filePath, cookies string, pg *utils.Pr
 	return nil
 }
 
-func DownloadVideo(v VideoData, vData DownloadVideoRequest, basePath, cookies string, callback func(pg *utils.Progress)) error {
-	var err error
-	v.genSortedStreams()
-	stream := v.sortedStreams[0].name
+func DownloadVideo(videoData VideoData, vData DownloadVideoRequest, basePath, cookies string, callback func(pg *utils.Progress)) error {
+	videoData.genSortedStreams()
+	stream := videoData.sortedStreams[0].name
 
-	data, ok := v.Streams[stream]
+	data, ok := videoData.Streams[stream]
 	if !ok {
 		return fmt.Errorf("no stream named %s", stream)
 	}
@@ -208,37 +208,29 @@ func DownloadVideo(v VideoData, vData DownloadVideoRequest, basePath, cookies st
 	}
 	// After the merge, the file size has changed, so we do not check whether the size matches
 	if mergedFileExists {
-		fmt.Printf("%s: file already exists, skipping\n", mergedFilePath)
+		fmt.Println()
+		log.Println(mergedFilePath + ": file already exists, skipping")
 		return nil
 	}
-	// 单线程下载
+	// 下载视频（目前为单线程）
 	bar := utils.NewProgress(title, data.Size, callback)
 	parts := make([]string, len(data.URLs))
 	for index, url := range data.URLs {
-		var fileName, partFilePath string
-		if len(data.URLs) == 1 {
-			fileName = title
-		} else {
-			fileName = fmt.Sprintf("%s[%d]", title, index)
-			partFilePath, err = utils.FilePath(basePath, fileName, url.Ext, false)
-			if err != nil {
-				return err
-			}
-			parts[index] = partFilePath
-		}
-		err := SaveFile(url, fileName, basePath, cookies, bar, callback)
+		fileName := fmt.Sprintf("%s[%d]", title, index)
+		partFilePath, err := utils.FilePath(basePath, fileName, url.Ext, false)
 		if err != nil {
 			return err
 		}
-	}
-	if v.Type != "video" {
-		return nil
-	}
-	// 合并多段文件
-	if len(data.URLs) != 1 {
-		if err := utils.MergeToMP4(parts, mergedFilePath, title); err != nil {
+
+		parts[index] = partFilePath
+
+		if err = SaveFile(url, fileName, basePath, cookies, bar, callback); err != nil {
 			return err
 		}
 	}
-	return nil
+	if videoData.Type != "video" {
+		return nil
+	}
+	// 合并多段文件
+	return utils.MergeToMP4(parts, mergedFilePath, title)
 }
