@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/Yesterday17/bili-archive/bilibili"
+	"github.com/pkg/browser"
 	"log"
 	"strconv"
 )
@@ -102,6 +103,7 @@ func main() {
 		}
 	} else {
 		// 启动服务器
+		browser.OpenURL("http://localhost:8080")
 		CreateBiliArchiveServer()
 	}
 }
