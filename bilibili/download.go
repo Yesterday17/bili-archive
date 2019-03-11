@@ -190,7 +190,7 @@ func DownloadVideo(v VideoData, vData DownloadVideoRequest, basePath, cookies st
 	}
 
 	// 生成文件名
-	title := fmt.Sprintf("%s - %s", vData.Title, vData.Page.PageName)
+	title := vData.Page.CID
 
 	// 跳过存在的 flv 文件
 	if _, err := os.Stat(path.Join(basePath, title+".flv")); !os.IsNotExist(err) {
@@ -236,11 +236,9 @@ func DownloadVideo(v VideoData, vData DownloadVideoRequest, basePath, cookies st
 	}
 	// 合并多段文件
 	if len(data.URLs) != 1 {
-		fmt.Printf("Merging video parts into %s\n", mergedFilePath)
-		// TODO: 合并文件
-		//if err := utils.MergeToMP4(parts, mergedFilePath, title); err != nil {
-		//	return err
-		//}
+		if err := utils.MergeToMP4(parts, mergedFilePath, title); err != nil {
+			return err
+		}
 	}
 	return nil
 }
