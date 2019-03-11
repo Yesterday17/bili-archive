@@ -8,7 +8,6 @@ import (
 	_ "github.com/Yesterday17/bili-archive/statik"
 	"github.com/Yesterday17/bili-archive/utils"
 	"github.com/gorilla/websocket"
-	"github.com/iawia002/annie/config"
 	"github.com/rakyll/statik/fs"
 	"io/ioutil"
 	"log"
@@ -91,12 +90,6 @@ func CreateBiliArchiveServer() {
 
 			// 立即保存已获得的 Cookies
 			QuickSaveConfig()
-
-			// 配置 annie
-			// TODO: 脱离 annie
-			config.InfoOnly = false
-			config.Cookie = configuration.Cookies
-			config.RetryTimes = 10
 		}
 
 		// 返回 json
