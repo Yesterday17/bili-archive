@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/Yesterday17/bili-archive/bilibili"
 	_ "github.com/Yesterday17/bili-archive/statik"
 	"github.com/Yesterday17/bili-archive/utils"
@@ -13,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
 )
 
 func CreateBiliArchiveServer() {
@@ -308,39 +308,34 @@ func CreateBiliArchiveServer() {
 			return
 		}
 
-		outputName := fmt.Sprintf("%s - %s", data.Title, data.Page.PageName)
-		outputPath := "./video/" + string(data.FavTitle)
+		outputPath := path.Join("./video/", data.FavTitle)
 
-		if _, err := os.Stat(outputPath + "/" + outputName + ".flv"); os.IsNotExist(err) {
-			if _, err := os.Stat(outputPath + "/" + outputName + ".mp4"); os.IsNotExist(err) {
-				// 获得视频链接
-				item := bilibili.ExtractVideo(data, configuration.Cookies)
-				if item.Err != nil {
-					log.Println(item.Err)
-					result := map[string]interface{}{
-						"status": "error",
-						"data":   item.Err,
-					}
-					if err := ws.WriteJSON(&result); err != nil {
-						log.Println(err)
-					}
-					return
-				}
+		// 获得视频链接
+		item := bilibili.ExtractVideo(data, configuration.Cookies)
+		if item.Err != nil {
+			log.Println(item.Err)
+			result := map[string]interface{}{
+				"status": "error",
+				"data":   item.Err,
+			}
+			if err := ws.WriteJSON(&result); err != nil {
+				log.Println(err)
+			}
+			return
+		}
 
-				callback := func(pg *utils.Progress) {
-					ws.WriteJSON(pg)
-				}
+		callback := func(pg *utils.Progress) {
+			ws.WriteJSON(pg)
+		}
 
-				// 下载视频
-				if err = bilibili.DownloadVideo(item, data, outputPath, configuration.Cookies, callback); err != nil {
-					log.Println(err)
-					if err := ws.WriteJSON(&map[string]interface{}{
-						"status": "error",
-						"data":   err,
-					}); err != nil {
-						log.Println(err)
-					}
-				}
+		// 下载视频
+		if err = bilibili.DownloadVideo(item, data, outputPath, configuration.Cookies, callback); err != nil {
+			log.Println(err)
+			if err := ws.WriteJSON(&map[string]interface{}{
+				"status": "error",
+				"data":   err,
+			}); err != nil {
+				log.Println(err)
 			}
 		}
 	}

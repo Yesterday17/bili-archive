@@ -6,6 +6,7 @@ import (
 	"github.com/Yesterday17/bili-archive/utils"
 	"io"
 	"os"
+	"path"
 	"sort"
 	"time"
 )
@@ -190,6 +191,11 @@ func DownloadVideo(v VideoData, vData DownloadVideoRequest, basePath, cookies st
 
 	// 生成文件名
 	title := fmt.Sprintf("%s - %s", vData.Title, vData.Page.PageName)
+
+	// 跳过存在的 flv 文件
+	if _, err := os.Stat(path.Join(basePath, title+".flv")); !os.IsNotExist(err) {
+		return nil
+	}
 
 	// 跳过已合并文件
 	mergedFilePath, err := utils.FilePath(basePath, title, "mp4", false)
