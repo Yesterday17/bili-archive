@@ -4,14 +4,13 @@ plugins {
 
 golang {
     packagePath = 'github.com/Yesterday17/bili-archive'
-    fuckGfw = true
+    fuckGfw = false
 }
 
 dependencies {
     golang {
         build name: 'github.com/skip2/go-qrcode'
         build name: 'github.com/gorilla/websocket'
-        build name: 'github.com/iawia002/annie'
         build name: 'github.com/rakyll/statik'
         build name: 'github.com/pkg/browser'
     }
