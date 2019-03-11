@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"github.com/Yesterday17/bili-archive/bilibili"
@@ -65,21 +64,18 @@ func main() {
 			// 遍历收藏分页
 			for i := 0; i < list.CurrentCount/20; i++ {
 				var items []bilibili.FavoriteListItemVideo
-				err := errors.New(fmt.Sprintf("Favlist: %s, Page: %d", list.Name, i+1))
-				for err != nil {
+				var err error
+				for items, err = bilibili.GetFavoriteListItems(uid, strconv.Itoa(fid), strconv.Itoa(i+1), configuration.Cookies); err != nil; {
 					log.Println(err)
 					time.Sleep(time.Second)
-					items, err = bilibili.GetFavoriteListItems(uid, strconv.Itoa(fid), strconv.Itoa(i+1), configuration.Cookies)
 				}
 
 				// 遍历收藏内各视频
 				for _, item := range items {
 					var pages bilibili.VideoPages
-					err := errors.New(fmt.Sprintf("Video: %s, AID: %d", item.Title, item.AID))
-					for err != nil {
+					for pages, err = bilibili.GetVideoPages(strconv.Itoa(item.AID)); err != nil; {
 						log.Println(err.Error())
 						time.Sleep(time.Second)
-						pages, err = bilibili.GetVideoPages(strconv.Itoa(item.AID))
 					}
 
 					// 遍历分P
@@ -97,18 +93,20 @@ func main() {
 						}
 						// 提取链接
 						video := bilibili.ExtractVideo(data, configuration.Cookies)
+						logStr := fmt.Sprintf("[av%d][p%d]", item.AID, page.Page)
+						fmt.Println(logStr + " " + item.Title)
 						if video.Err != nil {
-							log.Println(fmt.Sprintf("[EX][av%d][p%d] %s", item.AID, page.Page, video.Err))
+							log.Println(fmt.Sprintf("[%s]%s %s", "EX", logStr, video.Err))
 							continue
 						}
 						// 创建目录
 						if err := os.MkdirAll(listPath, os.ModePerm); err != nil {
-							log.Println(fmt.Sprintf("[MK][av%d][p%d] %s", item.AID, page.Page, err))
+							log.Println(fmt.Sprintf("[%s]%s %s", "MK", logStr, video.Err))
 							continue
 						}
 						// 下载视频
 						if err := bilibili.DownloadVideo(video, data, listPath, configuration.Cookies, nil); err != nil {
-							log.Println(fmt.Sprintf("[DL][av%d][p%d] %s", item.AID, page.Page, err))
+							log.Println(fmt.Sprintf("[%s]%s %s", "DL", logStr, video.Err))
 							continue
 						}
 					}
