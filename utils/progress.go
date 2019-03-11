@@ -38,7 +38,7 @@ func (pg *Progress) Write(p []byte) (n int, err error) {
 	n = len(p)
 	pg.Progress.Progress += int64(n)
 
-	if pg.Status != 2 {
+	if pg.Status != 2 && pg.callback != nil {
 		pg.callback(pg)
 	}
 	return
@@ -46,16 +46,22 @@ func (pg *Progress) Write(p []byte) (n int, err error) {
 
 func (pg *Progress) Start() {
 	pg.Status = 1
-	pg.callback(pg)
+	if pg.callback != nil {
+		pg.callback(pg)
+	}
 }
 
 func (pg *Progress) Finish() {
 	pg.Status = 2
-	pg.callback(pg)
+	if pg.callback != nil {
+		pg.callback(pg)
+	}
 }
 
 func (pg *Progress) Error(err error) {
 	pg.Status = -1
 	pg.Message = err.Error()
-	pg.callback(pg)
+	if pg.callback != nil {
+		pg.callback(pg)
+	}
 }
