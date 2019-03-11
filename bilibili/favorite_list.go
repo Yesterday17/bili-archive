@@ -12,15 +12,15 @@ type favoriteList struct {
 }
 
 type favoriteListData struct {
-	Archive  []favoriteListItem `json:"archive"`
-	Playlist int                `json:"playlist"`
-	Topic    int                `json:"topic"`
-	Article  int                `json:"article"`
-	Album    int                `json:"album"`
-	Movie    int                `json:"movie"`
+	Archive  []FavoriteListItemDetail `json:"archive"`
+	Playlist int                      `json:"playlist"`
+	Topic    int                      `json:"topic"`
+	Article  int                      `json:"article"`
+	Album    int                      `json:"album"`
+	Movie    int                      `json:"movie"`
 }
 
-type favoriteListItem struct {
+type FavoriteListItemDetail struct {
 	MediaID      int                     `json:"media_id"`
 	FID          int                     `json:"fid"`
 	MID          int                     `json:"mid"`
@@ -41,7 +41,7 @@ type favoriteListItemCover struct {
 	Type    int    `json:"type"`
 }
 
-func GetFavoriteList(mid string, cookies string) ([]favoriteListItem, error) {
+func GetFavoriteList(mid string, cookies string) ([]FavoriteListItemDetail, error) {
 	body := favoriteList{}
 
 	if err := utils.GetJson("http://api.bilibili.com/x/space/fav/nav?mid="+mid, cookies, &body); err != nil {

@@ -1,5 +1,10 @@
 package utils
 
+import (
+	"github.com/cheggaaa/pb"
+	"time"
+)
+
 // Status:
 // -1     Error
 // 0      Not Started
@@ -16,6 +21,16 @@ type Progress struct {
 type ProgressData struct {
 	Size     int64 `json:"size"`
 	Progress int64 `json:"progress"`
+}
+
+func NewProgressBar(prefix string) *pb.ProgressBar {
+	bar := pb.New64(100)
+	bar.Prefix(prefix)
+	bar.ShowSpeed = true
+	bar.ShowFinalTime = true
+	bar.SetRefreshRate(time.Second * 10)
+	bar.SetUnits(pb.U_BYTES)
+	return bar
 }
 
 func NewProgress(title string, size int64, callback func(pg *Progress)) *Progress {
