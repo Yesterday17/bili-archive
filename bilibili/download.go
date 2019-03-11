@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"github.com/Yesterday17/bili-archive/utils"
 	"io"
-	"log"
 	"os"
-	"path"
 	"sort"
 	"time"
 )
@@ -94,12 +92,9 @@ func writeFile(url, cookies string, header map[string]string, file *os.File, pg 
 	return written, nil
 }
 
-func SaveFile(urlData VideoURL, fileName, filePath, cookies string, pg *utils.Progress, callback func(pg *utils.Progress)) error {
-	filePath, err := utils.FilePath(filePath, fileName, urlData.Ext, false)
-	if err != nil {
-		return err
-	}
-	fileSize, exists, err := utils.FileSize(fileName)
+func SaveFile(urlData VideoURL, fName, fPath, cookies string, pg *utils.Progress) error {
+	filePath := utils.FilePath(fPath, fName, urlData.Ext)
+	fileSize, exists, err := utils.FileSize(fName)
 	if err != nil {
 		pg.Error(err)
 		pg.Finish()
@@ -192,39 +187,18 @@ func DownloadVideo(videoData VideoData, vData DownloadVideoRequest, basePath, co
 	// 生成文件名
 	title := vData.Page.CID
 
-	// 跳过存在的 flv 文件
-	if _, err := os.Stat(path.Join(basePath, title+".flv")); !os.IsNotExist(err) {
-		return nil
-	}
+	// 最终文件路径
+	finalFilePath := utils.FilePath(basePath, title, "mp4")
 
-	// 跳过已合并文件
-	mergedFilePath, err := utils.FilePath(basePath, title, "mp4", false)
-	if err != nil {
-		return err
-	}
-	_, mergedFileExists, err := utils.FileSize(mergedFilePath)
-	if err != nil {
-		return err
-	}
-	// After the merge, the file size has changed, so we do not check whether the size matches
-	if mergedFileExists {
-		fmt.Println()
-		log.Println(mergedFilePath + ": file already exists, skipping")
-		return nil
-	}
 	// 下载视频（目前为单线程）
 	bar := utils.NewProgress(title, data.Size, callback)
 	parts := make([]string, len(data.URLs))
 	for index, url := range data.URLs {
 		fileName := fmt.Sprintf("%s[%d]", title, index)
-		partFilePath, err := utils.FilePath(basePath, fileName, url.Ext, false)
-		if err != nil {
-			return err
-		}
-
+		partFilePath := utils.FilePath(basePath, fileName, url.Ext)
 		parts[index] = partFilePath
 
-		if err = SaveFile(url, fileName, basePath, cookies, bar, callback); err != nil {
+		if err := SaveFile(url, fileName, basePath, cookies, bar); err != nil {
 			return err
 		}
 	}
@@ -232,5 +206,5 @@ func DownloadVideo(videoData VideoData, vData DownloadVideoRequest, basePath, co
 		return nil
 	}
 	// 合并多段文件
-	return utils.MergeToMP4(parts, mergedFilePath, title)
+	return utils.MergeToMP4(parts, finalFilePath, title)
 }
