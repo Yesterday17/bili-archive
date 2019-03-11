@@ -8,7 +8,6 @@ import (
 	"github.com/cheggaaa/pb"
 	"github.com/pkg/browser"
 	"log"
-	"os"
 	syspath "path"
 	"strconv"
 	"sync"
@@ -85,7 +84,12 @@ func main() {
 							time.Sleep(time.Second)
 						}
 						// 该视频的本地路径
-						videoPath := syspath.Join(path, fmt.Sprintf("av%d", item.AID))
+						basePath := syspath.Join(path, fmt.Sprintf("av%d", item.AID))
+						videoPath := syspath.Join(basePath, "video")
+						dataPath := syspath.Join(basePath, "data")
+						lockPath := syspath.Join(basePath, "lock")
+						// 创建视频文件目录
+						utils.MKDirs(basePath, videoPath, dataPath, lockPath)
 						// 对每个视频的分P实行多线程下载
 						var wgv sync.WaitGroup
 						// 遍历分P
@@ -93,7 +97,7 @@ func main() {
 							// 该分P的进度条
 							bar := utils.NewProgressBar(fmt.Sprintf("[P%d]%s", page.Page, item.Title))
 							wgv.Add(1)
-							go func(page bilibili.VideoPage, bar *pb.ProgressBar) {
+							go func(item bilibili.FavoriteListItemVideo, page bilibili.VideoPage, bar *pb.ProgressBar) {
 								defer wgv.Done()
 								// 准备数据
 								data := bilibili.DownloadVideoRequest{
@@ -108,32 +112,40 @@ func main() {
 								}
 								// 提取链接
 								video := bilibili.ExtractVideo(data, configuration.Cookies)
-								logStr := fmt.Sprintf("[av%d][p%d]", item.AID, page.Page)
-								// fmt.Println(logStr + " " + item.Title)
+								logStr := fmt.Sprintf("[av%d][P%d]", item.AID, page.Page)
 								if video.Err != nil {
 									log.Println(fmt.Sprintf("[%s]%s %s", "EX", logStr, video.Err))
 									return
 								}
-								// 创建目录
-								if err := os.MkdirAll(videoPath, os.ModePerm); err != nil {
-									log.Println(fmt.Sprintf("[%s]%s %s", "MK", logStr, video.Err))
-									return
-								}
-								// 开始进度条
-								bar.Start()
 								// 回调函数
 								callback := func(pg *utils.Progress) {
 									bar.Set64(pg.Progress.Progress)
 									bar.SetTotal64(pg.Progress.Size)
 								}
-								// 下载视频
-								if err := bilibili.DownloadVideo(video, data, videoPath, configuration.Cookies, callback); err != nil {
-									log.Println(fmt.Sprintf("[%s]%s %s", "DL", logStr, video.Err))
-									return
+								// 保存视频数据
+								if err := utils.WriteJsonS(dataPath, "video.json", item); err != nil {
+									log.Println(fmt.Sprintf("[%s]%s %s", "VD", logStr, err))
+								}
+								// 保存分P信息
+								if err := utils.WriteJsonS(dataPath, fmt.Sprintf("%d.json", page.CID), page); err != nil {
+									log.Println(fmt.Sprintf("[%s]%s %s", "PD", logStr, err))
+								}
+								if !utils.FileExist(lockPath, strconv.Itoa(page.CID)) {
+									// 开始进度条
+									bar.Start()
+									// 下载视频
+									if err := bilibili.DownloadVideo(video, data, videoPath, configuration.Cookies, callback); err != nil {
+										log.Println(fmt.Sprintf("[%s]%s %s", "DL", logStr, err))
+										return
+									}
+									// 视频下载结束后创建 lockfile
+									if err := utils.WriteFile(lockPath, strconv.Itoa(page.CID), []byte{}); err != nil {
+										log.Println(fmt.Sprintf("[%s]%s %s", "LO", logStr, err))
+									}
 								}
 								// 结束进度条
 								bar.Finish()
-							}(page, bar)
+							}(item, page, bar)
 						}
 						wgv.Wait()
 					}
