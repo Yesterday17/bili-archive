@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/browser"
 	"log"
 	"os"
+	syspath "path"
 	"strconv"
 	"time"
 )
@@ -42,7 +43,7 @@ func main() {
 		}
 
 		// 获得 UID
-		if currentUser {
+		if uid == "" && currentUser {
 			uid = bilibili.GetUserMID(configuration.Cookies)
 			if uid == "-1" {
 				// 获得当前用户 UID 失败
@@ -59,7 +60,7 @@ func main() {
 		// 遍历收藏各列表
 		for _, list := range lists {
 			fid := list.FID
-			listPath := path + list.Name
+			listPath := syspath.Join(path, list.Name)
 
 			// 遍历收藏分页
 			for i := 0; i < list.CurrentCount/20; i++ {
@@ -101,7 +102,7 @@ func main() {
 							continue
 						}
 						// 创建目录
-						if err := os.MkdirAll("./video/"+data.FavTitle, os.ModePerm); err != nil {
+						if err := os.MkdirAll(listPath, os.ModePerm); err != nil {
 							log.Println(fmt.Sprintf("[MK][av%d][p%d] %s", item.AID, page.Page, err))
 							continue
 						}
