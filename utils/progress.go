@@ -28,7 +28,7 @@ func NewProgressBar(prefix string) *pb.ProgressBar {
 	bar.Prefix(prefix)
 	bar.ShowSpeed = true
 	bar.ShowFinalTime = true
-	bar.SetRefreshRate(time.Second * 10)
+	bar.SetRefreshRate(time.Second)
 	bar.SetUnits(pb.U_BYTES)
 	return bar
 }
