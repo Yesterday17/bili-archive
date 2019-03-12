@@ -110,39 +110,40 @@ func main() {
 						var wgv sync.WaitGroup
 						// 遍历分P
 						for _, page := range pages {
-							// 该分P的进度条
-							bar := utils.NewProgressBar(fmt.Sprintf("[P%d]%s", page.Page, item.Title))
-							wgv.Add(1)
-							go func(item bilibili.FavoriteListItemVideo, page bilibili.VideoPage, bar *pb.ProgressBar) {
-								defer wgv.Done()
-								// 准备数据
-								data := bilibili.DownloadVideoRequest{
-									Title:    item.Title,
-									Aid:      strconv.Itoa(item.AID),
-									FavTitle: list.Name,
-									Page: bilibili.RequestVideoPage{
-										Page:     page.Page,
-										CID:      strconv.Itoa(page.CID),
-										PageName: page.PageName,
-									},
-								}
-								// 提取链接
-								video := bilibili.ExtractVideo(data, configuration.Cookies)
-								logStr := fmt.Sprintf("[av%d][P%d]", item.AID, page.Page)
-								if video.Err != nil {
-									log.Println(fmt.Sprintf("[%s]%s %s", "EX", logStr, video.Err))
-									return
-								}
-								// 回调函数
-								callback := func(pg *utils.Progress) {
-									bar.Set64(pg.Progress.Progress)
-									bar.SetTotal64(pg.Progress.Size)
-								}
-								// 保存分P信息
-								if err := utils.WriteJsonS(dataPath, fmt.Sprintf("%d.json", page.CID), page); err != nil {
-									log.Println(fmt.Sprintf("[%s]%s %s", "PD", logStr, err))
-								}
-								if !utils.FileExist(lockPath, strconv.Itoa(page.CID)) {
+							// 存在 lockfile 直接跳过整个视频下载
+							if !utils.FileExist(lockPath, strconv.Itoa(page.CID)) {
+								// 该分P的进度条
+								bar := utils.NewProgressBar(fmt.Sprintf("[P%d]%s", page.Page, item.Title))
+								wgv.Add(1)
+								go func(item bilibili.FavoriteListItemVideo, page bilibili.VideoPage, bar *pb.ProgressBar) {
+									defer wgv.Done()
+									// 准备数据
+									data := bilibili.DownloadVideoRequest{
+										Title:    item.Title,
+										Aid:      strconv.Itoa(item.AID),
+										FavTitle: list.Name,
+										Page: bilibili.RequestVideoPage{
+											Page:     page.Page,
+											CID:      strconv.Itoa(page.CID),
+											PageName: page.PageName,
+										},
+									}
+									// 提取链接
+									video := bilibili.ExtractVideo(data, configuration.Cookies)
+									logStr := fmt.Sprintf("[av%d][P%d]", item.AID, page.Page)
+									if video.Err != nil {
+										log.Println(fmt.Sprintf("[%s]%s %s", "EX", logStr, video.Err))
+										return
+									}
+									// 回调函数
+									callback := func(pg *utils.Progress) {
+										bar.Set64(pg.Progress.Progress)
+										bar.SetTotal64(pg.Progress.Size)
+									}
+									// 保存分P信息
+									if err := utils.WriteJsonS(dataPath, fmt.Sprintf("%d.json", page.CID), page); err != nil {
+										log.Println(fmt.Sprintf("[%s]%s %s", "PD", logStr, err))
+									}
 									// 开始进度条
 									bar.Start()
 									// 下载视频
@@ -154,10 +155,10 @@ func main() {
 									if err := utils.WriteLockFile(lockPath, strconv.Itoa(page.CID)); err != nil {
 										log.Println(fmt.Sprintf("[%s]%s %s", "LO", logStr, err))
 									}
-								}
-								// 结束进度条
-								bar.Finish()
-							}(item, page, bar)
+									// 结束进度条
+									bar.Finish()
+								}(item, page, bar)
+							}
 						}
 						wgv.Wait()
 					}
