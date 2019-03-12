@@ -79,17 +79,33 @@ func main() {
 					// 遍历收藏内各视频
 					for _, item := range items {
 						var pages []bilibili.VideoPage
-						for pages, err = bilibili.GetVideoPages(strconv.Itoa(item.AID)); err != nil; {
-							log.Println(err.Error())
-							time.Sleep(time.Second)
-						}
-						// 该视频的本地路径
+						// 本地路径
 						basePath := syspath.Join(path, fmt.Sprintf("av%d", item.AID))
 						videoPath := syspath.Join(basePath, "video")
 						dataPath := syspath.Join(basePath, "data")
 						lockPath := syspath.Join(basePath, "lock")
 						// 创建视频文件目录
 						utils.MKDirs(basePath, videoPath, dataPath, lockPath)
+						// 保存视频数据
+						if err := utils.WriteJsonS(dataPath, "video.json", item); err != nil {
+							log.Println(fmt.Sprintf("[%s]%s", "VD", err))
+						}
+						// 跳过失效视频
+						if utils.FileExist(lockPath, "broken") {
+							continue
+						}
+						// 不存在 lockfile 时获取 pages
+						for pages, err = bilibili.GetVideoPages(strconv.Itoa(item.AID)); err != nil; {
+							log.Println(err.Error())
+							time.Sleep(time.Second)
+						}
+						// 获取 pages 后判断视频是否失效
+						if len(pages) == 0 {
+							if err := utils.WriteLockFile(lockPath, "broken"); err != nil {
+								log.Println(fmt.Sprintf("[%s]%s", "LO", err))
+							}
+							continue
+						}
 						// 对每个视频的分P实行多线程下载
 						var wgv sync.WaitGroup
 						// 遍历分P
@@ -122,10 +138,6 @@ func main() {
 									bar.Set64(pg.Progress.Progress)
 									bar.SetTotal64(pg.Progress.Size)
 								}
-								// 保存视频数据
-								if err := utils.WriteJsonS(dataPath, "video.json", item); err != nil {
-									log.Println(fmt.Sprintf("[%s]%s %s", "VD", logStr, err))
-								}
 								// 保存分P信息
 								if err := utils.WriteJsonS(dataPath, fmt.Sprintf("%d.json", page.CID), page); err != nil {
 									log.Println(fmt.Sprintf("[%s]%s %s", "PD", logStr, err))
@@ -139,7 +151,7 @@ func main() {
 										return
 									}
 									// 视频下载结束后创建 lockfile
-									if err := utils.WriteFile(lockPath, strconv.Itoa(page.CID), []byte{}); err != nil {
+									if err := utils.WriteLockFile(lockPath, strconv.Itoa(page.CID)); err != nil {
 										log.Println(fmt.Sprintf("[%s]%s %s", "LO", logStr, err))
 									}
 								}
