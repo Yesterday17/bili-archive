@@ -11,11 +11,9 @@ type VideoPage struct {
 	CID      int    `json:"cid"`
 }
 
-type VideoPages []VideoPage
-
-func GetVideoPages(aid string) (VideoPages, error) {
+func GetVideoPages(aid string) ([]VideoPage, error) {
 	var err error
-	body := VideoPages{}
+	var body []VideoPage
 
 	content, err := utils.Get("https://www.bilibili.com/widget/getPageList?aid="+aid, "", nil)
 	if err != nil {

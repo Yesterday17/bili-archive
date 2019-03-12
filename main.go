@@ -78,7 +78,7 @@ func main() {
 
 					// 遍历收藏内各视频
 					for _, item := range items {
-						var pages bilibili.VideoPages
+						var pages []bilibili.VideoPage
 						for pages, err = bilibili.GetVideoPages(strconv.Itoa(item.AID)); err != nil; {
 							log.Println(err.Error())
 							time.Sleep(time.Second)
