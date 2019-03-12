@@ -28,6 +28,10 @@ func WriteJsonS(fpath, fname string, data interface{}) error {
 	return nil
 }
 
+func WriteLockFile(fpath, fname string) error {
+	return WriteFile(fpath, fname, []byte{})
+}
+
 func MkDir(fpath string) error {
 	return os.MkdirAll(fpath, os.ModePerm)
 }
