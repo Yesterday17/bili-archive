@@ -1,6 +1,7 @@
 package bilibili
 
 import (
+	"encoding/json"
 	"github.com/Yesterday17/bili-archive/utils"
 )
 
@@ -13,10 +14,17 @@ type VideoPage struct {
 type VideoPages []VideoPage
 
 func GetVideoPages(aid string) (VideoPages, error) {
+	var err error
 	body := VideoPages{}
-	if err := utils.GetJson("https://www.bilibili.com/widget/getPageList?aid="+aid, "", &body); err != nil {
+
+	content, err := utils.Get("https://www.bilibili.com/widget/getPageList?aid="+aid, "", nil)
+	if err != nil {
 		return nil, err
 	}
 
-	return body, nil
+	if content[0] != '<' {
+		err = json.Unmarshal([]byte(content), &body)
+	}
+
+	return body, err
 }
