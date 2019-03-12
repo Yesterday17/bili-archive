@@ -8,6 +8,7 @@ import (
 	"github.com/cheggaaa/pb"
 	"github.com/pkg/browser"
 	"log"
+	"math"
 	syspath "path"
 	"strconv"
 	"sync"
@@ -68,7 +69,8 @@ func main() {
 				fid := list.FID
 
 				// 遍历收藏分页
-				for i := 0; i < list.CurrentCount/20; i++ {
+
+				for i := 0; i < int(math.Ceil(float64(list.CurrentCount)/30.0)); i++ {
 					var items []bilibili.FavoriteListItemVideo
 					var err error
 					for items, err = bilibili.GetFavoriteListItems(uid, strconv.Itoa(fid), strconv.Itoa(i+1), configuration.Cookies); err != nil; {
