@@ -1,0 +1,16 @@
+github.com/VividCortex/ewma v1.1.1 h1:MnEK4VOv6n0RSY4vtRe3h11qjxL3+t0B8yOL8iMXdcM=
+github.com/VividCortex/ewma v1.1.1/go.mod h1:2Tkkvm3sRDVXaiyucHiACn4cqf7DpdyLvmxzcbUokwA=
+github.com/gorilla/websocket v1.4.0 h1:WDFjx/TMzVgy9VdMMQi2K2Emtwi2QcUQsztZ/zLaH/Q=
+github.com/gorilla/websocket v1.4.0/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
+github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4 h1:49lOXmGaUpV9Fz3gd7TFZY106KVlPVa5jcYD1gaQf98=
+github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4/go.mod h1:4OwLy04Bl9Ef3GJJCoec+30X3LQs/0/m4HFRt/2LUSA=
+github.com/rakyll/statik v0.1.6 h1:uICcfUXpgqtw2VopbIncslhAmE5hwc4g20TEyEENBNs=
+github.com/rakyll/statik v0.1.6/go.mod h1:OEi9wJV/fMUAGx1eNjq75DKDsJVuEv1U0oYdX6GX8Zs=
+github.com/skip2/go-qrcode v0.0.0-20190110000554-dc11ecdae0a9 h1:lpEzuenPuO1XNTeikEmvqYFcU37GVLl8SRNblzyvGBE=
+github.com/skip2/go-qrcode v0.0.0-20190110000554-dc11ecdae0a9/go.mod h1:PLPIyL7ikehBD1OAjmKKiOEhbvWyHGaNDjquXMcYABo=
+github.com/vbauerster/mpb/v4 v4.6.1 h1:QQuWd8FccF2oPovbCp1sX7dlc7sDYKSaSigociRFo24=
+github.com/vbauerster/mpb/v4 v4.6.1/go.mod h1:myGMRZ96nY1YgVfpP7dGAFU7yjh/fKTyWW+EVhdtK4k=
+golang.org/x/crypto v0.0.0-20190403202508-8e1b8d32e692 h1:GRhHqDOgeDr6QDTtq9gn2O4iKvm5dsbfqD/TXb0KLX0=
+golang.org/x/crypto v0.0.0-20190403202508-8e1b8d32e692/go.mod h1:WFFai1msRO1wXaEeE5yQxYXgSfI8pQAWXbQop6sCtWE=
+golang.org/x/sys v0.0.0-20190403152447-81d4e9dc473e h1:nFYrTHrdrAOpShe27kaFHjsqYSEQ0KWqdWLu3xuZJts=
+golang.org/x/sys v0.0.0-20190403152447-81d4e9dc473e/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
