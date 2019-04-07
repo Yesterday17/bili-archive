@@ -86,6 +86,7 @@ func writeFile(url, cookies string, header map[string]string, file *os.File, pg 
 	// Note that io.Copy reads 32kb(maximum) from input and writes them to output, then repeats.
 	// So don't worry about memory.
 	written, copyErr := io.Copy(writer, res.Body)
+	// TODO: Check whether the content of res.Body is HTML
 	if copyErr != nil {
 		return written, fmt.Errorf("file copy error: %s", copyErr)
 	}

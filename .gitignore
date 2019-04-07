@@ -32,3 +32,6 @@ statik/
 
 # Frontend Built Files
 public/
+
+# Build Files
+build/
