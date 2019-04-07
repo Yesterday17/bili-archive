@@ -177,6 +177,9 @@ func SaveFile(urlData VideoURL, fName, fPath, cookies string, pg *utils.Progress
 
 func DownloadVideo(videoData VideoData, vData DownloadVideoRequest, basePath, cookies string, callback func(pg *utils.Progress)) error {
 	videoData.genSortedStreams()
+	if len(videoData.sortedStreams) == 0 {
+		return fmt.Errorf("error getting video stream of av%s", vData.Aid)
+	}
 	stream := videoData.sortedStreams[0].name
 
 	data, ok := videoData.Streams[stream]

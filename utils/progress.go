@@ -1,7 +1,8 @@
 package utils
 
 import (
-	"github.com/cheggaaa/pb"
+	"github.com/vbauerster/mpb/v4"
+	"sync"
 	"time"
 )
 
@@ -19,18 +20,18 @@ type Progress struct {
 }
 
 type ProgressData struct {
-	Size     int64 `json:"size"`
-	Progress int64 `json:"progress"`
+	Size     int64     `json:"size"`
+	Progress int64     `json:"progress"`
+	Increase int64     `json:"increase"`
+	Time     time.Time `json:"time"`
 }
 
-func NewProgressBar(prefix string) *pb.ProgressBar {
-	bar := pb.New64(100)
-	bar.Prefix(prefix)
-	bar.ShowSpeed = true
-	bar.ShowFinalTime = true
-	bar.SetRefreshRate(time.Second)
-	bar.SetUnits(pb.U_BYTES)
-	return bar
+func NewWGProgressBar(wg *sync.WaitGroup) *mpb.Progress {
+	return mpb.New(
+		mpb.WithWaitGroup(wg),
+		mpb.WithRefreshRate(500*time.Millisecond),
+		mpb.WithWidth(60),
+	)
 }
 
 func NewProgress(title string, size int64, callback func(pg *Progress)) *Progress {
@@ -40,6 +41,8 @@ func NewProgress(title string, size int64, callback func(pg *Progress)) *Progres
 		Progress: ProgressData{
 			Size:     size,
 			Progress: 0,
+			Time:     time.Now(),
+			Increase: 0,
 		},
 		callback: callback,
 	}
@@ -52,6 +55,8 @@ func (pg *Progress) Add(len int64) {
 func (pg *Progress) Write(p []byte) (n int, err error) {
 	n = len(p)
 	pg.Progress.Progress += int64(n)
+	pg.Progress.Increase = int64(n)
+	pg.Progress.Time = time.Now()
 
 	if pg.Status != 2 && pg.callback != nil {
 		pg.callback(pg)

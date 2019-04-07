@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"github.com/Yesterday17/bili-archive/bilibili"
 	"github.com/Yesterday17/bili-archive/utils"
-	"github.com/cheggaaa/pb"
 	"github.com/pkg/browser"
+	"github.com/vbauerster/mpb/v4"
+	"github.com/vbauerster/mpb/v4/decor"
 	"log"
 	"math"
 	syspath "path"
@@ -59,17 +60,17 @@ func main() {
 			log.Fatal(err)
 		}
 
-		var wgf sync.WaitGroup
+		var wg sync.WaitGroup
+		p := utils.NewWGProgressBar(&wg)
+		wg.Add(len(lists))
 
 		// 遍历收藏各列表
 		for _, list := range lists {
-			wgf.Add(1)
 			go func(list bilibili.FavoriteListItemDetail) {
-				defer wgf.Done()
+				defer wg.Done()
 				fid := list.FID
 
 				// 遍历收藏分页
-
 				for i := 0; i < int(math.Ceil(float64(list.CurrentCount)/30.0)); i++ {
 					var items []bilibili.FavoriteListItemVideo
 					var err error
@@ -102,23 +103,31 @@ func main() {
 							time.Sleep(time.Second)
 						}
 						// 获取 pages 后判断视频是否失效
-						if len(pages) == 0 {
+						if item.Cover == bilibili.BrokenVideoCover {
 							if err := utils.WriteLockFile(lockPath, "broken"); err != nil {
 								log.Println(fmt.Sprintf("[%s]%s", "LO", err))
 							}
 							continue
 						}
 						// 对每个视频的分P实行多线程下载
-						var wgv sync.WaitGroup
 						// 遍历分P
 						for _, page := range pages {
 							// 存在 lockfile 直接跳过整个视频下载
 							if !utils.FileExist(lockPath, strconv.Itoa(page.CID)) {
 								// 该分P的进度条
-								bar := utils.NewProgressBar(fmt.Sprintf("[P%d]%s", page.Page, item.Title))
-								wgv.Add(1)
-								go func(item bilibili.FavoriteListItemVideo, page bilibili.VideoPage, bar *pb.ProgressBar) {
-									defer wgv.Done()
+								bar := p.AddBar(
+									1,
+									mpb.BarStyle("[=>-]"),
+									mpb.BarOptOnCond(mpb.BarWidth(40), func() bool { return len(item.Title) > 10 }),
+									mpb.PrependDecorators(
+										decor.Name(fmt.Sprintf("[P%d]%s:", page.Page, item.Title)),
+									),
+									mpb.AppendDecorators(
+										decor.CountersKibiByte("% 6.1f/% 6.1f,"),
+										decor.AverageSpeed(decor.UnitKiB, "% .2f"),
+									),
+								)
+								func(item bilibili.FavoriteListItemVideo, page bilibili.VideoPage) {
 									// 准备数据
 									data := bilibili.DownloadVideoRequest{
 										Title:    item.Title,
@@ -127,7 +136,7 @@ func main() {
 										Page: bilibili.RequestVideoPage{
 											Page:     page.Page,
 											CID:      strconv.Itoa(page.CID),
-											PageName: page.PageName,
+											PageName: page.Part,
 										},
 									}
 									// 提取链接
@@ -139,15 +148,14 @@ func main() {
 									}
 									// 回调函数
 									callback := func(pg *utils.Progress) {
-										bar.Set64(pg.Progress.Progress)
-										bar.SetTotal64(pg.Progress.Size)
+										bar.SetTotal(pg.Progress.Size, false)
+										bar.SetCurrent(pg.Progress.Progress, time.Since(pg.Progress.Time))
 									}
 									// 保存分P信息
 									if err := utils.WriteJsonS(dataPath, fmt.Sprintf("%d.json", page.CID), page); err != nil {
 										log.Println(fmt.Sprintf("[%s]%s %s", "PD", logStr, err))
 									}
-									// 开始进度条
-									bar.Start()
+
 									// 下载视频
 									if err := bilibili.DownloadVideo(video, data, videoPath, configuration.Cookies, callback); err != nil {
 										log.Println(fmt.Sprintf("[%s]%s %s", "DL", logStr, err))
@@ -157,17 +165,15 @@ func main() {
 									if err := utils.WriteLockFile(lockPath, strconv.Itoa(page.CID)); err != nil {
 										log.Println(fmt.Sprintf("[%s]%s %s", "LO", logStr, err))
 									}
-									// 结束进度条
-									bar.Finish()
-								}(item, page, bar)
+								}(item, page)
 							}
 						}
-						wgv.Wait()
 					}
 				}
 			}(list)
 		}
-		wgf.Wait()
+		// wg.Wait()
+		p.Wait()
 		fmt.Println("下载完成！")
 	} else {
 		// 打开前端网页

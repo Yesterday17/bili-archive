@@ -6,6 +6,8 @@ import (
 	"strconv"
 )
 
+const BrokenVideoCover = "http://i0.hdslb.com/bfs/archive/be27fd62c99036dce67efface486fb0a88ffed06.jpg"
+
 func addLine(original *string, line string) {
 	*original += line + "\n"
 }
@@ -27,7 +29,7 @@ func IterateFavoriteList(mid string, cookies string, callback func(key, value st
 					callback("Message", "Video unavailable.", "")
 				} else {
 					for _, page := range pages {
-						callback("Page", page.PageName, page)
+						callback("Page", page.Part, page)
 					}
 				}
 			}
