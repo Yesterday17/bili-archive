@@ -31,11 +31,24 @@ yarn build
 4. 打包前端
 
 ```bash
-statik -src=/path/to/your/project/public
+statik -src=./public -f
 ```
 
 5. 构建
 
 ```bash
-go build
+set CGO_ENABLED=0
+
+# 选择架构(amd64, 386, arm)
+set GOARCH=amd64
+
+# 选择平台(windows, linux, darwin, freebsd)
+set GOOS=windows
+go build -o ./build/bili_archive_windows_x64.exe
+
+set GOOS=darwin
+go build -o ./build/bili_archive_darwin_amd64
+
+set GOOS=linux
+go build -o ./build/bili_archive_linux_amd64
 ```
