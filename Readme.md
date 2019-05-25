@@ -37,5 +37,5 @@ statik -src=/path/to/your/project/public
 5. 构建
 
 ```bash
-./gradlew goBuild
+go build
 ```

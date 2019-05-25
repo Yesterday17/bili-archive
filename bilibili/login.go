@@ -103,7 +103,7 @@ func GetCookiesString(link string) string {
 		ans := strings.Split(value, "=")
 		cookies.Set(ans[0], ans[1])
 	}
-	return Cookies(cookies)
+	return strings.Replace(Cookies(cookies), "%252C", "%2C", -1)
 }
 
 func getLoginAddr() qrLogin {

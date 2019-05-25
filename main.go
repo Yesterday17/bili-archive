@@ -118,6 +118,7 @@ func main() {
 								bar := p.AddBar(
 									1,
 									mpb.BarStyle("[=>-]"),
+									mpb.BarRemoveOnComplete(),
 									mpb.BarOptOnCond(mpb.BarWidth(40), func() bool { return len(item.Title) > 10 }),
 									mpb.PrependDecorators(
 										decor.Name(fmt.Sprintf("[P%d]%s:", page.Page, item.Title)),
