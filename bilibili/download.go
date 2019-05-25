@@ -82,11 +82,17 @@ func writeFile(url, cookies string, header map[string]string, file *os.File, pg 
 		return 0, err
 	}
 	defer res.Body.Close()
+
+	// TODO: Check whether the following check works well
+	// #4
+	if res.StatusCode != 200 && res.StatusCode != 206 {
+		return 0, fmt.Errorf("response code error: %d", res.StatusCode)
+	}
+
 	writer := io.MultiWriter(file, pg)
 	// Note that io.Copy reads 32kb(maximum) from input and writes them to output, then repeats.
 	// So don't worry about memory.
 	written, copyErr := io.Copy(writer, res.Body)
-	// TODO: Check whether the content of res.Body is HTML
 	if copyErr != nil {
 		return written, fmt.Errorf("file copy error: %s", copyErr)
 	}
