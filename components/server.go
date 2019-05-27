@@ -17,7 +17,6 @@ func CreateBiliArchiveServer() {
 	code := bilibili.QRCode{}
 	handler := http.NewServeMux()
 
-	// 后端
 	// Path: /api/login-qr
 	// Method: GET
 	// Description: 获得登录所需要的二维码

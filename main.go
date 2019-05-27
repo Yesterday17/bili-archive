@@ -38,6 +38,13 @@ func main() {
 	// 立即保存（初始设置）
 	components.QuickSaveConfig()
 
+	// 单纯作为后端运行
+	if server {
+		components.CreateBiliArchiveServer()
+		return
+	}
+
+	// 以下的内容均为命令行模式
 	// 警告不存在 cookies
 	if components.Configuration.Cookies == "" {
 		log.Fatal("不存在 cookies，请指定 cookies！")

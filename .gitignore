@@ -27,11 +27,5 @@ video/
 # Configuration File
 config.json
 
-# statik Generated Files
-statik/
-
-# Frontend Built Files
-public/
-
 # Build Files
 build/
