@@ -72,7 +72,7 @@ func main() {
 			for i := 0; i < int(math.Ceil(float64(list.CurrentCount)/30.0)); i++ {
 				var items []bilibili.FavoriteListItemVideo
 				var err error
-				for items, err = bilibili.GetFavoriteListItems(uid, strconv.Itoa(fid), strconv.Itoa(i+1), components.configuration.Cookies); err != nil; {
+				for items, err = bilibili.GetFavoriteListItems(uid, strconv.Itoa(fid), strconv.Itoa(i+1), components.Configuration.Cookies); err != nil; {
 					log.Println(err)
 					time.Sleep(time.Second)
 				}
