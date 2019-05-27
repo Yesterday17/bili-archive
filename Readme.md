@@ -31,7 +31,8 @@ yarn build
 4. 打包前端
 
 ```bash
-statik -src=./public -f
+cd bili-archive-frontend
+statik -src=./build -f
 ```
 
 5. 构建

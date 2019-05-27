@@ -1,13 +1,11 @@
-package main
+package components
 
 import (
 	"encoding/json"
 	"errors"
 	"github.com/Yesterday17/bili-archive/bilibili"
-	_ "github.com/Yesterday17/bili-archive/statik"
 	"github.com/Yesterday17/bili-archive/utils"
 	"github.com/gorilla/websocket"
-	"github.com/rakyll/statik/fs"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -19,13 +17,6 @@ func CreateBiliArchiveServer() {
 	code := bilibili.QRCode{}
 	handler := http.NewServeMux()
 
-	// 前端
-	frontend, err := fs.New()
-	if err != nil {
-		log.Fatal(err)
-	}
-	handler.Handle("/", http.FileServer(frontend))
-
 	// 后端
 	// Path: /api/login-qr
 	// Method: GET
@@ -33,11 +24,11 @@ func CreateBiliArchiveServer() {
 	// Response: @image string
 	loginQRHandler := func(w http.ResponseWriter, req *http.Request) {
 		// 检测 Cookies 是否过期
-		if configuration.Cookies == "" || bilibili.GetUserMID(configuration.Cookies) == "-1" {
+		if Configuration.Cookies == "" || bilibili.GetUserMID(Configuration.Cookies) == "-1" {
 			code = bilibili.GetLoginQRCode()
 
 			// 更新配置文件中的 cookies
-			configuration.Cookies = ""
+			Configuration.Cookies = ""
 			QuickSaveConfig()
 		} else {
 			code.Image = "cookies_exist"
@@ -48,6 +39,7 @@ func CreateBiliArchiveServer() {
 			log.Fatal(err)
 		}
 
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(output)
 	}
@@ -62,7 +54,7 @@ func CreateBiliArchiveServer() {
 		ok, err := false, errors.New("")
 
 		// 存在 Cookies 直接跳过
-		if configuration.Cookies != "" {
+		if Configuration.Cookies != "" {
 			ok = true
 		} else {
 			if code.Image != "" {
@@ -85,7 +77,7 @@ func CreateBiliArchiveServer() {
 		if ok {
 			// Cookies 是新获得的
 			if tmpCookies != "" {
-				configuration.Cookies = bilibili.GetCookiesString(tmpCookies)
+				Configuration.Cookies = bilibili.GetCookiesString(tmpCookies)
 			}
 
 			// 立即保存已获得的 Cookies
@@ -93,6 +85,7 @@ func CreateBiliArchiveServer() {
 		}
 
 		// 返回 json
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(output)
 	}
@@ -106,10 +99,10 @@ func CreateBiliArchiveServer() {
 	// 			 @uid strng
 	currentUserHandler := func(w http.ResponseWriter, req *http.Request) {
 		message, uid := "", "-1"
-		if configuration.Cookies == "" {
+		if Configuration.Cookies == "" {
 			message = "用户未登录"
 		} else {
-			uid = bilibili.GetUserMID(configuration.Cookies)
+			uid = bilibili.GetUserMID(Configuration.Cookies)
 		}
 
 		output, err := json.Marshal(map[string]interface{}{
@@ -122,6 +115,7 @@ func CreateBiliArchiveServer() {
 			log.Fatal(err)
 		}
 
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(output)
 	}
@@ -153,6 +147,7 @@ func CreateBiliArchiveServer() {
 			log.Fatal(err)
 		}
 
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(output)
 	}
@@ -170,12 +165,13 @@ func CreateBiliArchiveServer() {
 			uid = "-1"
 		}
 
-		list, _ := bilibili.GetFavoriteList(uid, configuration.Cookies)
+		list, _ := bilibili.GetFavoriteList(uid, Configuration.Cookies)
 		output, _ := json.Marshal(map[string]interface{}{
 			"ok":   list != nil,
 			"data": list,
 		})
 
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(output)
 	}
@@ -195,13 +191,14 @@ func CreateBiliArchiveServer() {
 
 		var list []bilibili.FavoriteListItemVideo = nil
 		if uid != "" && fid != "" {
-			list, _ = bilibili.GetFavoriteListItems(uid, fid, pn, configuration.Cookies)
+			list, _ = bilibili.GetFavoriteListItems(uid, fid, pn, Configuration.Cookies)
 		}
 
 		output, _ := json.Marshal(map[string]interface{}{
 			"ok":   list != nil,
 			"data": list,
 		})
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(output)
 	}
@@ -220,6 +217,7 @@ func CreateBiliArchiveServer() {
 			"ok":   err == nil,
 			"data": pages,
 		})
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(output)
 	}
@@ -232,7 +230,7 @@ func CreateBiliArchiveServer() {
 	// Response: image/jpeg
 	getPicture := func(w http.ResponseWriter, req *http.Request) {
 		url := req.URL.Query().Get("url")
-		res, err := utils.Request("GET", url, configuration.Cookies, nil, nil)
+		res, err := utils.Request("GET", url, Configuration.Cookies, nil, nil)
 		if err != nil {
 			log.Println(err)
 			return
@@ -251,6 +249,7 @@ func CreateBiliArchiveServer() {
 		//str := base64.StdEncoding.EncodeToString(data)
 		//w.Write([]byte("data:image/jpg;base64," + str))
 
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "image/jpeg")
 		w.Write(data)
 	}
@@ -311,7 +310,7 @@ func CreateBiliArchiveServer() {
 		outputPath := path.Join("./video/", data.FavTitle)
 
 		// 获得视频链接
-		item := bilibili.ExtractVideo(data, configuration.Cookies)
+		item := bilibili.ExtractVideo(data, Configuration.Cookies)
 		if item.Err != nil {
 			log.Println(item.Err)
 			result := map[string]interface{}{
@@ -329,7 +328,7 @@ func CreateBiliArchiveServer() {
 		}
 
 		// 下载视频
-		if err = bilibili.DownloadVideo(item, data, outputPath, configuration.Cookies, callback); err != nil {
+		if err = bilibili.DownloadVideo(item, data, outputPath, Configuration.Cookies, callback); err != nil {
 			log.Println(err)
 			if err := ws.WriteJSON(&map[string]interface{}{
 				"status": "error",
@@ -355,12 +354,13 @@ func CreateBiliArchiveServer() {
 			"favorite_list":      bilibili.TestFavoriteList(),
 			"favorite_list_item": bilibili.TestFavoriteListItem(),
 		})
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(output)
 	}
 	handler.HandleFunc("/api/test", testSericeHandler)
 
-	if err := http.ListenAndServe(":"+configuration.Port, handler); err != nil {
+	if err := http.ListenAndServe(":"+Configuration.Port, handler); err != nil {
 		log.Fatal(err)
 	}
 }

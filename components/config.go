@@ -1,4 +1,4 @@
-package main
+package components
 
 import (
 	"encoding/json"
@@ -7,12 +7,12 @@ import (
 	"os"
 )
 
-var configuration = Configuration{
+var Configuration = ConfigurationStruct{
 	Port:    "8080",
 	Cookies: "",
 }
 
-type Configuration struct {
+type ConfigurationStruct struct {
 	Port    string `json:"port"`
 	Cookies string `json:"cookies"`
 }
@@ -25,7 +25,7 @@ func LoadConfig() error {
 		if error == nil {
 			defer file.Close()
 			decoder := json.NewDecoder(file)
-			err = decoder.Decode(&configuration)
+			err = decoder.Decode(&Configuration)
 		}
 	} else if os.IsNotExist(err) {
 		err = SaveConfig()
@@ -39,7 +39,7 @@ func SaveConfig() error {
 		defer file.Close()
 
 		encoder := json.NewEncoder(file)
-		err = encoder.Encode(configuration)
+		err = encoder.Encode(Configuration)
 	}
 
 	return err
