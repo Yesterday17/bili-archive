@@ -20,10 +20,10 @@ func main() {
 	var server bool
 	var cookies, uid, path string
 
-	flag.BoolVar(&server, "s", false, "是否启动服务端模式。")
-	flag.StringVar(&cookies, "cookies", "", "用户的 cookies，会覆盖配置文件内的值。")
-	flag.StringVar(&uid, "uid", "", "下载收藏用户的 UID")
-	flag.StringVar(&path, "path", "./Videos/", "下载视频的根目录")
+	flag.BoolVar(&server, "s", false, "启动后端模式。")
+	flag.StringVar(&cookies, "cookies", "", "用户的 cookies，会更新配置文件内的值。")
+	flag.StringVar(&uid, "uid", "", "下载收藏用户的 UID，不指定则为 cookies 对应用户。")
+	flag.StringVar(&path, "path", "./Videos/", "下载视频的根目录。")
 	flag.Parse()
 
 	// 加载配置文件
