@@ -1,0 +1,28 @@
+FORMAT: 1A
+
+# bili-archive
+
+`bili-archive` 提供了 `RESTful` 的后端，供备份[哔哩哔哩](https://www.bilibili.com/)的用户个人收藏夹。
+
+
+# Group 用户认证
+对用户登录情况的检查以及用户这里进行。
+
+## 检查登录状态 [/auth]
+
+### 检查登录状态 [GET]
+
++ Response 200 (application/json)
+
+        {
+            "code": 0,
+            "mid": "123817257"
+        }
+        
++ Response 200 (application/json)
+
+        {
+            "code": -101,
+            "raw": "NoLogin",
+            "message": "账号未登录"
+        }
