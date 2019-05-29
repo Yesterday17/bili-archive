@@ -1,7 +1,7 @@
 module github.com/Yesterday17/bili-archive
 
 require (
-	github.com/Yesterday17/bilibili-errorcode v0.0.0-20190423104426-84d29112224c
+	github.com/Yesterday17/bilibili-errorcode v1.0.0
 	github.com/emicklei/go-restful v2.9.5+incompatible
 	github.com/emicklei/go-restful-openapi v1.0.0
 	github.com/go-openapi/spec v0.19.0

@@ -6,6 +6,7 @@ github.com/VividCortex/ewma v1.1.1 h1:MnEK4VOv6n0RSY4vtRe3h11qjxL3+t0B8yOL8iMXdc
 github.com/VividCortex/ewma v1.1.1/go.mod h1:2Tkkvm3sRDVXaiyucHiACn4cqf7DpdyLvmxzcbUokwA=
 github.com/Yesterday17/bilibili-errorcode v0.0.0-20190423104426-84d29112224c h1:Y8tzrZspw6JOf78OkDV7AwjjSRs9MJtnPQvQmxnYbFw=
 github.com/Yesterday17/bilibili-errorcode v0.0.0-20190423104426-84d29112224c/go.mod h1:0TUu5YRJDDh1EkhjqX4UxMXBXbZy3rnptQiX+aok2Rs=
+github.com/Yesterday17/bilibili-errorcode v1.0.0/go.mod h1:0TUu5YRJDDh1EkhjqX4UxMXBXbZy3rnptQiX+aok2Rs=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
