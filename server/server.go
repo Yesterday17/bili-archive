@@ -13,6 +13,7 @@ var auth Auth
 
 func CreateBiliArchiveServer(port string, cookies string) {
 	auth = Auth{
+		login:   false,
 		cookies: cookies,
 		qrCode:  bilibili.QRCode{Image: ""},
 	}

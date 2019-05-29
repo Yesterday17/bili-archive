@@ -9,7 +9,21 @@ import (
 
 type Auth struct {
 	qrCode  bilibili.QRCode
+	login   bool
 	cookies string
+}
+
+// 验证 cookies 是否可用
+func (a *Auth) updateLoginStatus() {
+	if a.cookies != "" {
+		_, err := bilibili.GetUserMID(a.cookies)
+		if err != nil {
+			a.cookies = ""
+			a.login = false
+		} else {
+			a.login = true
+		}
+	}
 }
 
 func (a *Auth) getLoginStatus(request *restful.Request, response *restful.Response) {
@@ -19,9 +33,11 @@ func (a *Auth) getLoginStatus(request *restful.Request, response *restful.Respon
 	} else {
 		mid, err := bilibili.GetUserMID(a.cookies)
 		if err != nil {
+			a.login = false
 			code, _ := strconv.Atoi(string(err.Error()))
 			_ = response.WriteAsJson(ecode.ErrorCode(code).GetDetail())
 		} else {
+			a.login = true
 			_ = response.WriteAsJson(map[string]interface{}{
 				"code": 0,
 				"mid":  mid,
@@ -31,27 +47,35 @@ func (a *Auth) getLoginStatus(request *restful.Request, response *restful.Respon
 }
 
 func (a *Auth) getLoginQRCode(request *restful.Request, response *restful.Response) {
-	if a.qrCode.Image != "" && a.cookies != "" {
+	a.updateLoginStatus()
+
+	if a.cookies == "" && a.qrCode.Image != "" {
 		// 用户未登录
 		a.qrCode = bilibili.GetLoginQRCode()
 
 		_ = response.WriteAsJson(map[string]interface{}{
 			"code":  0,
-			"logon": false,
+			"login": false,
 			"image": a.qrCode.Image,
 		})
 	} else {
 		// 用户已经登录
 		_ = response.WriteAsJson(map[string]interface{}{
 			"code":  0,
-			"logon": true,
+			"login": true,
 			"image": "",
 		})
 	}
 }
 
 func (a *Auth) checkLoginStatus(request *restful.Request, response *restful.Response) {
-	if a.qrCode.Image == "" {
+	a.updateLoginStatus()
+	if a.login {
+		_ = response.WriteAsJson(map[string]interface{}{
+			"code":     0,
+			"redirect": a.cookies,
+		})
+	} else if a.qrCode.Image == "" {
 		_ = response.WriteAsJson(ecode.ErrorCode(-101).GetDetail())
 	} else {
 		success, redirect, err := a.qrCode.Check()
