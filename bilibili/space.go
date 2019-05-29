@@ -3,6 +3,7 @@ package bilibili
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -103,7 +104,7 @@ type vipStatus struct {
 	Status int `json:"status"`
 }
 
-func GetUserMID(cookies string) string {
+func GetUserMID(cookies string) (string, error) {
 	client := http.Client{}
 	body := MySpaceResponse{}
 
@@ -124,10 +125,10 @@ func GetUserMID(cookies string) string {
 	}
 
 	if body.Code != 0 {
-		return "-1"
+		return "-1", fmt.Errorf("%d", body.Code)
 	}
 
-	return strconv.Itoa(body.Data.Mid)
+	return strconv.Itoa(body.Data.Mid), nil
 }
 
 func GetMIDInfo(mid string) (MIDInfo, error) {

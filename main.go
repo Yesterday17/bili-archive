@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/Yesterday17/bili-archive/bilibili"
-	"github.com/Yesterday17/bili-archive/components"
+	"github.com/Yesterday17/bili-archive/server"
 	"github.com/Yesterday17/bili-archive/utils"
 	"github.com/vbauerster/mpb/v4"
 	"github.com/vbauerster/mpb/v4/decor"
@@ -17,50 +17,52 @@ import (
 )
 
 func main() {
-	var server bool
+	var serverMode bool
 	var cookies, uid, path string
 
-	flag.BoolVar(&server, "s", false, "启动后端模式。")
+	flag.BoolVar(&serverMode, "s", false, "启动后端模式。")
 	flag.StringVar(&cookies, "cookies", "", "用户的 cookies，会更新配置文件内的值。")
 	flag.StringVar(&uid, "uid", "", "下载收藏用户的 UID，不指定则为 cookies 对应用户。")
 	flag.StringVar(&path, "path", "./Videos/", "下载视频的根目录。")
 	flag.Parse()
 
 	// 加载配置文件
-	if err := components.LoadConfig(); err != nil {
+	if err := LoadConfig(); err != nil {
 		log.Fatal(err)
 	}
 
 	if cookies != "" {
-		components.Configuration.Cookies = cookies
+		configuration.Cookies = cookies
 	}
 
 	// 立即保存（初始设置）
-	components.QuickSaveConfig()
+	QuickSaveConfig()
 
 	// 单纯作为后端运行
-	if server {
-		components.CreateBiliArchiveServer()
+	if serverMode {
+		server.CreateBiliArchiveServer(configuration.Port, configuration.Cookies)
 		return
 	}
 
 	// 以下的内容均为命令行模式
 	// 警告不存在 cookies
-	if components.Configuration.Cookies == "" {
+	if configuration.Cookies == "" {
 		log.Fatal("不存在 cookies，请指定 cookies！")
 	}
 
 	// 获得 UID
 	if uid == "" {
-		uid = bilibili.GetUserMID(components.Configuration.Cookies)
-		if uid == "-1" {
+		mid, err := bilibili.GetUserMID(configuration.Cookies)
+		if err != nil {
 			// 获得当前用户 UID 失败
 			log.Fatal("获取当前用户 UID 失败，请尝试重新登录！")
+		} else {
+			uid = mid
 		}
 	}
 
 	// 获得收藏列表
-	lists, err := bilibili.GetFavoriteList(uid, components.Configuration.Cookies)
+	lists, err := bilibili.GetFavoriteList(uid, configuration.Cookies)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -79,7 +81,7 @@ func main() {
 			for i := 0; i < int(math.Ceil(float64(list.CurrentCount)/30.0)); i++ {
 				var items []bilibili.FavoriteListItemVideo
 				var err error
-				for items, err = bilibili.GetFavoriteListItems(uid, strconv.Itoa(fid), strconv.Itoa(i+1), components.Configuration.Cookies); err != nil; {
+				for items, err = bilibili.GetFavoriteListItems(uid, strconv.Itoa(fid), strconv.Itoa(i+1), configuration.Cookies); err != nil; {
 					log.Println(err)
 					time.Sleep(time.Second)
 				}
@@ -146,7 +148,7 @@ func main() {
 									},
 								}
 								// 提取链接
-								video := bilibili.ExtractVideo(data, components.Configuration.Cookies)
+								video := bilibili.ExtractVideo(data, configuration.Cookies)
 								logStr := fmt.Sprintf("[av%d][P%d]", item.AID, page.Page)
 								if video.Err != nil {
 									log.Println(fmt.Sprintf("[%s]%s %s", "EX", logStr, video.Err))
@@ -163,7 +165,7 @@ func main() {
 								}
 
 								// 下载视频
-								if err := bilibili.DownloadVideo(video, data, videoPath, components.Configuration.Cookies, callback); err != nil {
+								if err := bilibili.DownloadVideo(video, data, videoPath, configuration.Cookies, callback); err != nil {
 									log.Println(fmt.Sprintf("[%s]%s %s", "DL", logStr, err))
 									return
 								}

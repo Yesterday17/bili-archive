@@ -31,7 +31,7 @@ func (this qrLogin) heartbeat() (bool, string, error) {
 	var err error
 	body := map[string]interface{}{}
 	client := &http.Client{}
-	cookies := ""
+	redirect := ""
 
 	params := url.Values{}
 	params.Set("oauthKey", this.OauthKey)
@@ -53,10 +53,10 @@ func (this qrLogin) heartbeat() (bool, string, error) {
 
 	if body["status"] == true {
 		data := body["data"].(map[string]interface{})
-		cookies = data["url"].(string)
+		redirect = data["url"].(string)
 	}
 
-	return body["status"].(bool), cookies, nil
+	return body["status"].(bool), redirect, nil
 }
 
 type QRCode struct {
@@ -81,7 +81,7 @@ func (this QRCode) WaitForLogin() (url.Values, bool) {
 		}
 
 		if ok {
-			response = response[42 : len(response)-72]
+			response = GetCookiesString(response)
 			for _, value := range strings.Split(response, "&") {
 				ans := strings.Split(value, "=")
 				cookies.Set(ans[0], ans[1])
