@@ -1,12 +1,13 @@
 FORMAT: 1A
+Host: http://localhost:8080
 
 # bili-archive
 
 `bili-archive` 提供了 `RESTful` 的后端，供备份[哔哩哔哩](https://www.bilibili.com/)的用户个人收藏夹。
 
 
-# Group 用户认证
-对用户登录情况的检查以及用户这里进行。
+# Group 用户登录
+对用户登录以及登录情况的检查这里进行。
 
 ## 检查登录状态 [/auth]
 
@@ -19,10 +20,54 @@ FORMAT: 1A
             "mid": "123817257"
         }
         
-+ Response 200 (application/json)
++ Response 401 (application/json)
 
         {
             "code": -101,
             "raw": "NoLogin",
             "message": "账号未登录"
         }
+        
+## 获取登录二维码 [/auth/login]
+
+### 获取登录二维码 [GET]
+
++ Response 200 (application/json)
+
+        {
+            "code": 0,
+            "image": "data:image/png;base64,"
+        }
+        
+### 重置登录状态 [DELETE]
+
++ Response 204
+        
+## 检查二维码登录是否成功 [/auth/check]
+
+### 检查并尝试获取 cookies [GET]
+
++ Response 200 (application/json)
+
+        {
+            "code": 0,
+            "cookies": "DedeUserID=USERID;DedeUserID__ckMd5=USERID_MD5;Expires=EXPIRES;SESSDATA=SESSDATA;bili_jct=BILI_JCT"
+        }
+        
++ Response 401 (application/json)
+
+        {
+            "code": -101,
+            "raw": "NoLogin",
+            "message": "账号未登录"
+        }
+        
++ Response 500 (application/json)
+
+        {
+            "code": -500,
+            "raw": "ServerErr",
+            "message": "服务器错误"
+        }
+                
+# Group 用户信息
