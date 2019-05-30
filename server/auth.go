@@ -23,18 +23,22 @@ func (a *Auth) updateLoginStatus() {
 		} else {
 			a.login = true
 		}
+	} else {
+		a.login = false
 	}
 }
 
 func (a *Auth) getLoginStatus(request *restful.Request, response *restful.Response) {
 	if a.cookies == "" {
 		// 快速跳过空 cookies 的情况
+		response.WriteHeader(401)
 		_ = response.WriteAsJson(ecode.ErrorCode(-101).GetDetail())
 	} else {
 		mid, err := bilibili.GetUserMID(a.cookies)
 		if err != nil {
 			a.login = false
 			code, _ := strconv.Atoi(string(err.Error()))
+			response.WriteHeader(401)
 			_ = response.WriteAsJson(ecode.ErrorCode(code).GetDetail())
 		} else {
 			a.login = true
@@ -49,7 +53,7 @@ func (a *Auth) getLoginStatus(request *restful.Request, response *restful.Respon
 func (a *Auth) getLoginQRCode(request *restful.Request, response *restful.Response) {
 	a.updateLoginStatus()
 
-	if a.cookies == "" && a.qrCode.Image != "" {
+	if a.cookies == "" && a.qrCode.Image == "" {
 		// 用户未登录
 		a.qrCode = bilibili.GetLoginQRCode()
 
@@ -63,7 +67,6 @@ func (a *Auth) getLoginQRCode(request *restful.Request, response *restful.Respon
 		_ = response.WriteAsJson(map[string]interface{}{
 			"code":  0,
 			"login": true,
-			"image": "",
 		})
 	}
 }
@@ -72,8 +75,8 @@ func (a *Auth) checkLoginStatus(request *restful.Request, response *restful.Resp
 	a.updateLoginStatus()
 	if a.login {
 		_ = response.WriteAsJson(map[string]interface{}{
-			"code":     0,
-			"redirect": a.cookies,
+			"code":    0,
+			"cookies": a.cookies,
 		})
 	} else if a.qrCode.Image == "" {
 		_ = response.WriteAsJson(ecode.ErrorCode(-101).GetDetail())
@@ -81,18 +84,27 @@ func (a *Auth) checkLoginStatus(request *restful.Request, response *restful.Resp
 		success, redirect, err := a.qrCode.Check()
 		if err != nil {
 			// -500 服务器错误
+			response.WriteHeader(500)
 			_ = response.WriteAsJson(ecode.ErrorCode(-500).GetDetail())
 		} else if !success {
 			// -101 账号未登录
+			response.WriteHeader(401)
 			_ = response.WriteAsJson(ecode.ErrorCode(-101).GetDetail())
 		} else {
 			a.cookies = bilibili.GetCookiesString(redirect)
 			_ = response.WriteAsJson(map[string]interface{}{
-				"code":     0,
-				"redirect": a.cookies,
+				"code":    0,
+				"cookies": a.cookies,
 			})
 		}
 	}
+}
+
+func (a *Auth) logoutAuth(request *restful.Request, response *restful.Response) {
+	a.login = false
+	a.cookies = ""
+	a.qrCode.Image = ""
+	response.WriteHeader(204)
 }
 
 func (a *Auth) WebService() *restful.WebService {
@@ -104,13 +116,15 @@ func (a *Auth) WebService() *restful.WebService {
 		Produces(restful.MIME_JSON)
 
 	ws.Route(ws.GET("/").To(a.getLoginStatus).
-		Doc("get login status"))
+		Doc("获得用户登录状态"))
 
 	ws.Route(ws.GET("/login").To(a.getLoginQRCode).
-		Doc("get login qr code base64 string"))
+		Doc("获得用以用户登录的二维码"))
+	ws.Route(ws.DELETE("/login").To(a.logoutAuth).
+		Doc("注销当前用户"))
 
 	ws.Route(ws.GET("/check").To(a.checkLoginStatus).
-		Doc("check login status of current qrCode"))
+		Doc("检查当前登录二维码的登录情况"))
 
 	return ws
 }
