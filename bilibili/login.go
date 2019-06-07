@@ -69,31 +69,24 @@ func (this QRCode) Check() (bool, string, error) {
 	return this.QRLogin.heartbeat()
 }
 
-func (this QRCode) WaitForLogin() (url.Values, bool) {
+func (this QRCode) WaitForLogin() (error, string) {
 	response := ""
-	cookies := url.Values{}
 	for times := 0; times < 60; times++ {
 		ok, ret, err := this.Check()
 		response = ret
 
 		if err != nil {
-			log.Fatal(err.Error())
+			return err, ""
 		}
 
 		if ok {
 			response = GetCookiesString(response)
-			for _, value := range strings.Split(response, "&") {
-				ans := strings.Split(value, "=")
-				cookies.Set(ans[0], ans[1])
-			}
 			break
 		} else {
 			time.Sleep(3 * time.Second)
 		}
 	}
-
-	// cookies, timeout
-	return cookies, strings.EqualFold(response, "")
+	return nil, response
 }
 
 func GetCookiesString(link string) string {

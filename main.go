@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/Baozisoftware/qrcode-terminal-go"
 	"github.com/Yesterday17/bili-archive/bilibili"
 	"github.com/Yesterday17/bili-archive/server"
 	"github.com/Yesterday17/bili-archive/utils"
@@ -44,10 +45,23 @@ func main() {
 		return
 	}
 
-	// 以下的内容均为命令行模式
-	// 警告不存在 cookies
+	// 用户登录
 	if configuration.Cookies == "" {
-		log.Fatal("不存在 cookies，请指定 cookies！")
+		code := bilibili.GetLoginQRCode()
+		log.Println("账号未登录，请扫描以下二维码登录！")
+		log.Println("如果二维码未显示完全，请上下放大，不要左右放大窗口！")
+		obj := qrcodeTerminal.New2(
+			qrcodeTerminal.ConsoleColors.BrightBlack,
+			qrcodeTerminal.ConsoleColors.BrightWhite,
+			qrcodeTerminal.QRCodeRecoveryLevels.Low,
+		)
+		obj.Get(code.QRLogin.Url).Print()
+		err, cookies := code.WaitForLogin()
+		if err != nil {
+			log.Fatal(err)
+		}
+		configuration.Cookies = cookies
+		log.Println("登录成功！")
 	}
 
 	// 获得 UID
