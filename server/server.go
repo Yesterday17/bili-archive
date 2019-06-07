@@ -10,15 +10,20 @@ import (
 )
 
 var auth Auth
+var user UserInfo
 
 func CreateBiliArchiveServer(port string, cookies string) {
+	// auth server
 	auth = Auth{
 		login:   false,
 		cookies: cookies,
 		qrCode:  bilibili.QRCode{Image: ""},
 	}
-
+	auth.updateLoginStatus()
 	restful.DefaultContainer.Add(auth.WebService())
+	restful.DefaultContainer.Add(user.WebService())
+
+	// restful spec
 	config := restfulspec.Config{
 		WebServices:                   restful.RegisteredWebServices(),
 		APIPath:                       "/apidocs.json",
