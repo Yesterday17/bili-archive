@@ -13,18 +13,46 @@ import (
 	"math"
 	syspath "path"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
 
+func FilterFavList(vs []bilibili.FavoriteListItemDetail, f func(bilibili.FavoriteListItemDetail) bool) []bilibili.FavoriteListItemDetail {
+	vsf := make([]bilibili.FavoriteListItemDetail, 0)
+	for _, v := range vs {
+		if f(v) {
+			vsf = append(vsf, v)
+		}
+	}
+	return vsf
+}
+
+func StringIndex(vs []string, t string) int {
+	for i, v := range vs {
+		if v == t {
+			return i
+		}
+	}
+	return -1
+}
+
+func StringInclude(vs []string, t string) bool {
+	return StringIndex(vs, t) >= 0
+}
+
 func main() {
 	var serverMode bool
 	var cookies, uid, path string
+	var mode, wl, bl string
 
 	flag.BoolVar(&serverMode, "s", false, "启动后端模式。")
 	flag.StringVar(&cookies, "cookies", "", "用户的 cookies，会更新配置文件内的值。")
 	flag.StringVar(&uid, "uid", "", "下载收藏用户的 UID，不指定则为 cookies 对应用户。")
 	flag.StringVar(&path, "path", "./Videos/", "下载视频的根目录。")
+	flag.StringVar(&mode, "mode", "normal", "下载的模式，n为通常，b为黑名单，w为白名单，配合wh和bl使用。")
+	flag.StringVar(&wl, "wl", "", "下载收藏列表的白名单，用英文分号分隔，每一项为收藏夹的FID。")
+	flag.StringVar(&bl, "bl", "", "下载收藏列表的黑名单，用英文分号分隔，每一项为收藏夹的FID。")
 	flag.Parse()
 
 	// 加载配置文件
@@ -44,6 +72,10 @@ func main() {
 		server.CreateBiliArchiveServer(configuration.Port, configuration.Cookies)
 		return
 	}
+
+	// 预处理黑名单/白名单
+	whitelist := strings.Split(wl, ";")
+	blacklist := strings.Split(wl, ";")
 
 	// 用户登录
 	if configuration.Cookies == "" {
@@ -77,10 +109,26 @@ func main() {
 	}
 
 	// 获得收藏列表
-	lists, err := bilibili.GetFavoriteList(uid, configuration.Cookies)
+	favlists, err := bilibili.GetFavoriteList(uid, configuration.Cookies)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// 黑名单/白名单过滤
+	lists := FilterFavList(favlists, func(fav bilibili.FavoriteListItemDetail) bool {
+		fid := strconv.Itoa(fav.FID)
+		switch mode {
+		case "b":
+			// blacklist, 黑名单
+			return !StringInclude(blacklist, fid)
+		case "w":
+			// whitelist, 白名单
+			return StringInclude(whitelist, fid)
+		default:
+			// normal
+			return true
+		}
+	})
 
 	var wg sync.WaitGroup
 	p := utils.NewWGProgressBar(&wg)
