@@ -31,7 +31,7 @@ func CreateBiliArchiveServer(port string, cookies string) {
 	}
 	restful.DefaultContainer.Add(restfulspec.NewOpenAPIService(config))
 
-	log.Printf("start listening on localhost: %s", port)
+	log.Printf("bili-archive 后端已开始运行！http://localhost:%s", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
