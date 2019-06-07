@@ -62,6 +62,7 @@ func main() {
 		}
 		configuration.Cookies = cookies
 		log.Println("登录成功！")
+		QuickSaveConfig()
 	}
 
 	// 获得 UID
