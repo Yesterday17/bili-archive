@@ -5,7 +5,6 @@ Host: http://localhost:8080
 
 `bili-archive` 提供了 `RESTful` 的后端，供备份[哔哩哔哩](https://www.bilibili.com/)的用户个人收藏夹。
 
-
 # Group 用户登录
 对用户登录以及登录情况的检查这里进行。
 
@@ -19,7 +18,7 @@ Host: http://localhost:8080
             "code": 0,
             "mid": "123817257"
         }
-        
+
 + Response 401 (application/json)
 
         {
@@ -27,7 +26,7 @@ Host: http://localhost:8080
             "raw": "NoLogin",
             "message": "账号未登录"
         }
-        
+
 ## 获取登录二维码 [/auth/login]
 
 ### 获取登录二维码 [GET]
@@ -38,11 +37,11 @@ Host: http://localhost:8080
             "code": 0,
             "image": "data:image/png;base64,"
         }
-        
+
 ### 重置登录状态 [DELETE]
 
 + Response 204
-        
+
 ## 检查二维码登录是否成功 [/auth/check]
 
 ### 检查并尝试获取 cookies [GET]
@@ -53,7 +52,7 @@ Host: http://localhost:8080
             "code": 0,
             "cookies": "DedeUserID=USERID;DedeUserID__ckMd5=USERID_MD5;Expires=EXPIRES;SESSDATA=SESSDATA;bili_jct=BILI_JCT"
         }
-        
+
 + Response 401 (application/json)
 
         {
@@ -61,7 +60,7 @@ Host: http://localhost:8080
             "raw": "NoLogin",
             "message": "账号未登录"
         }
-        
+
 + Response 500 (application/json)
 
         {
@@ -71,3 +70,65 @@ Host: http://localhost:8080
         }
                 
 # Group 用户信息
+获取当前登录用户的各项信息。
+
+## 获取用户 MID [/user/mid]
+MID，又称UID，是与哔哩哔哩用户一一对应的一串数字。
+
+### 获取当前登录用户的MID [GET]
++ Response 200 (application/json)
+
+        {
+            "code": 0,
+            "mid": "123817257"
+        }
+
++ Response 401 (application/json)
+
+        {
+            "code": -101,
+            "raw": "NoLogin",
+            "message": "账号未登录"
+        }
+
+## 获取当前登录用户的信息 [/user/info]
+获取用户信息，包括头像等。
+
+### 获取 [GET]
++ Response 200 (application/json)
+
+        {
+            "mid": 5756570,
+            "name": "某昨P",
+            "sex": "男",
+            "face": "http://i1.hdslb.com/bfs/face/7115c5ff964c5aea3bc70792fdb2073b1f6dcb19.jpg",
+            "sign": "VSCode拓展绝赞制作中\n@普罗丢人某昨P",
+            "rank": 10000,
+            "level": 5,
+            "jointime": 0,
+            "moral": 0,
+            "silence": 0,
+            "birthday": "01-12",
+            "coins": 0,
+            "fans_badge": false,
+            "official": {
+             "role": 0,
+             "title": "",
+             "desc": ""
+            },
+            "vip": {
+             "type": 2,
+             "status": 1
+            },
+            "is_followed": false,
+            "top_photo": "http://i0.hdslb.com/bfs/space/d3b626ed8576cd1dd835106970ace242391fac71.png",
+            "theme": {}
+        }
+
++ Response 401 (application/json)
+
+        {
+            "code": -101,
+            "raw": "NoLogin",
+            "message": "账号未登录"
+        }
