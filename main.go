@@ -50,7 +50,7 @@ func main() {
 	flag.StringVar(&cookies, "cookies", "", "用户的 cookies，会更新配置文件内的值。")
 	flag.StringVar(&uid, "uid", "", "下载收藏用户的 UID，不指定则为 cookies 对应用户。")
 	flag.StringVar(&path, "path", "./Videos/", "下载视频的根目录。")
-	flag.StringVar(&mode, "mode", "normal", "下载的模式，n为通常，b为黑名单，w为白名单，配合wh和bl使用。")
+	flag.StringVar(&mode, "mode", "n", "下载的模式，n为通常，b为黑名单，w为白名单，配合wh和bl使用。")
 	flag.StringVar(&wl, "wl", "", "下载收藏列表的白名单，用英文分号分隔，每一项为收藏夹的FID。")
 	flag.StringVar(&bl, "bl", "", "下载收藏列表的黑名单，用英文分号分隔，每一项为收藏夹的FID。")
 	flag.Parse()
