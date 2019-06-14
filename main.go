@@ -79,6 +79,7 @@ func main() {
 
 	// 用户登录
 	if configuration.Cookies == "" {
+		// TODO: make login part of TUI
 		code := bilibili.GetLoginQRCode()
 		log.Println("账号未登录，请扫描以下二维码登录！")
 		log.Println("如果二维码未显示完全，请上下放大，不要左右放大窗口！")
@@ -95,6 +96,7 @@ func main() {
 		configuration.Cookies = cookies
 		log.Println("登录成功！")
 		QuickSaveConfig()
+		return
 	}
 
 	// 获得 UID
