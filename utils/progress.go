@@ -1,8 +1,6 @@
 package utils
 
 import (
-	"github.com/vbauerster/mpb/v4"
-	"sync"
 	"time"
 )
 
@@ -24,14 +22,6 @@ type ProgressData struct {
 	Progress int64     `json:"progress"`
 	Increase int64     `json:"increase"`
 	Time     time.Time `json:"time"`
-}
-
-func NewWGProgressBar(wg *sync.WaitGroup) *mpb.Progress {
-	return mpb.New(
-		mpb.WithWaitGroup(wg),
-		mpb.WithRefreshRate(500*time.Millisecond),
-		mpb.WithWidth(60),
-	)
 }
 
 func NewProgress(title string, size int64, callback func(pg *Progress)) *Progress {

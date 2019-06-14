@@ -177,7 +177,6 @@ func main() {
 	}
 
 	var wg sync.WaitGroup
-	p := utils.NewWGProgressBar(&wg)
 	wg.Add(len(lists))
 
 	// 遍历收藏各列表
@@ -298,8 +297,7 @@ func main() {
 	if !silentMode {
 		ui.Run()
 	} else {
-		// wg.Wait()
-		p.Wait()
+		wg.Wait()
 		fmt.Println("下载完成！")
 	}
 }
