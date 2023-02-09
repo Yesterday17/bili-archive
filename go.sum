@@ -8,8 +8,8 @@ github.com/Yesterday17/bilibili-errorcode v1.0.0 h1:cG5/LrmHzF+oIBjPSQNyfYx8tTwJ
 github.com/Yesterday17/bilibili-errorcode v1.0.0/go.mod h1:0TUu5YRJDDh1EkhjqX4UxMXBXbZy3rnptQiX+aok2Rs=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/emicklei/go-restful v2.9.6+incompatible h1:tfrHha8zJ01ywiOEC1miGY8st1/igzWB8OmvPgoYX7w=
-github.com/emicklei/go-restful v2.9.6+incompatible/go.mod h1:otzb+WCGbkyDHkqmQmT5YD2WR4BBwUdeQoFo8l/7tVs=
+github.com/emicklei/go-restful v2.16.0+incompatible h1:rgqiKNjTnFQA6kkhFe16D8epTksy9HQ1MyrbDXSdYhM=
+github.com/emicklei/go-restful v2.16.0+incompatible/go.mod h1:otzb+WCGbkyDHkqmQmT5YD2WR4BBwUdeQoFo8l/7tVs=
 github.com/emicklei/go-restful-openapi v1.0.0 h1:ZFk3RuCl8ZmG1yUAF/mSbXRi5cuyA/k5+EpHayuuTXM=
 github.com/emicklei/go-restful-openapi v1.0.0/go.mod h1:Q+bHVYfUWv1fvC4FNTsz2AVvFSsXAC7RCiWjF1Sva1A=
 github.com/gdamore/encoding v0.0.0-20151215212835-b23993cbb635 h1:hheUEMzaOie/wKeIc1WPa7CDVuIO5hqQxjS+dwTQEnI=
